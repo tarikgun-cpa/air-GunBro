@@ -68,6 +68,10 @@
                 <span>☁️ Görsel & GitHub Kaydı (<span id="loadedAssetCount">0/66</span>)</span>
             </button>
 
+            <button id="btnDownloadHtml" class="bg-cyan-950/90 hover:bg-cyan-900 text-cyan-200 border border-cyan-500/60 px-3 py-1.5 rounded text-xs md:text-sm font-orbitron font-bold flex items-center space-x-1.5 transition shadow-lg" title="GitHub'a yüklemek için index.html dosyasını indir">
+                <span>💾 index.html İndir</span>
+            </button>
+
             <label for="localSpriteUploader" class="cursor-pointer bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 px-3 py-1.5 rounded text-xs md:text-sm font-semibold flex items-center space-x-1.5 transition">
                 <span>📁 Klasörden Seç</span>
             </label>
@@ -331,13 +335,13 @@
                 <!-- GitHub Klasör Yolu ve Uzantı Ayarı -->
                 <div class="bg-slate-950/90 border border-cyan-500/30 rounded-xl p-3.5 mb-3 text-xs space-y-2">
                     <div class="font-orbitron font-bold text-amber-400 flex items-center justify-between">
-                        <span>🚀 ADIM ADIM GITHUB & FIREBASE KURULUM REHBERİ</span>
-                        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/40">Otomatik Raw URL Dönüştürücü Aktif</span>
+                        <span>🚀 ADIM ADIM GITHUB PAGES & FIREBASE KURULUM REHBERİ</span>
+                        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/40">Aynı Klasör + Raw URL Aktif</span>
                     </div>
                     <ol class="list-decimal list-inside text-slate-300 space-y-1 text-[11px] leading-relaxed">
-                        <li><strong>GitHub'da Depo (Repository) Açın:</strong> GitHub hesabınızda <strong class="text-white">Public (Herkese Açık)</strong> bir repo oluşturun (Örn: <code class="text-cyan-300">air-combat-assets</code>) ve 66 görselinizi içine yükleyin.</li>
-                        <li><strong>Linki Yapıştırın:</strong> GitHub'daki klasörünüzün normal linkini veya herhangi bir görselin linkini aşağıdaki kutuya yapıştırın. (Sistem normal GitHub linklerini otomatik olarak <code class="text-emerald-300">raw.githubusercontent.com</code> adresine dönüştürür).</li>
-                        <li><strong>Kaydedin:</strong> Uzantınızı seçip <strong class="text-emerald-400">"💾 FIREBASE'E KAYDET & YÜKLE"</strong> butonuna basın. Ayarınız buluta kaydedilir ve 66 görselin tamamı otomatik çekilir.</li>
+                        <li><strong>1. Dosyaları Birleştirin:</strong> Üst bardaki <strong class="text-cyan-300">"💾 index.html İndir"</strong> butonuna basarak bu oyun dosyasını bilgisayarınızdaki 66 görselin bulunduğu klasörün içine kaydedin.</li>
+                        <li><strong>2. GitHub'a Yükleyin:</strong> GitHub'da açtığınız <strong class="text-white">Public</strong> deponuza <strong>hem `index.html` dosyasını hem de 66 görselinizi</strong> birlikte yükleyin (Upload files -> Commit changes).</li>
+                        <li><strong>3. Hem Buradan Hem GitHub Pages'den Oynayın:</strong> `index.html` ile görseller aynı GitHub klasöründe olduğunda oyun görselleri otomatik bulur! Ayrıca GitHub klasör linkinizi aşağıdaki kutuya yapıştırıp <strong class="text-emerald-400">"💾 FIREBASE'E KAYDET & YÜKLE"</strong> diyerek bu önizleme ekranında da anında görebilirsiniz.</li>
                     </ol>
                 </div>
 
@@ -358,6 +362,21 @@
                         <button id="btnSaveToFirebase" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-orbitron font-bold text-xs py-2.5 px-4 rounded shadow-lg transition">
                             💾 FIREBASE'E KAYDET & YÜKLE
                         </button>
+                    </div>
+                </div>
+
+                <!-- Otomatik Beyaz Arka Plan Temizleme (Nerf Tarzı Auto-Keying & Crop) Ayarı -->
+                <div class="bg-slate-950/90 border border-emerald-500/40 rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center space-x-2.5">
+                        <input id="chkRemoveWhiteBg" type="checkbox" checked class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
+                        <label for="chkRemoveWhiteBg" class="font-bold text-emerald-300 cursor-pointer">
+                            ✂️ Yüklenen Görsellerin Etrafındaki Beyaz Arka Planı & Fazlalıkları Otomatik Kaldır (Haritalar Hariç)
+                        </label>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-slate-400">Beyaz Toleransı:</span>
+                        <input id="rngWhiteTolerance" type="range" min="180" max="252" value="228" class="w-28 accent-cyan-400 cursor-pointer">
+                        <span id="valWhiteTolerance" class="font-mono text-cyan-300 w-8">228</span>
                     </div>
                 </div>
 
@@ -568,12 +587,179 @@
          * 3. FIREBASE KAYIT VE GITHUB GÖRSEL YÜKLEME SİSTEMİ
          *************************************************************************/
         const loadedSprites = {};
+        const rawOriginalImages = {}; // Tolerans değiştiğinde tekrar işleyebilmek için ham görselleri tutar
         let githubBaseUrl = "";
         let githubFileExt = ".png";
+        let removeWhiteBgEnabled = true;
+        let whiteBgTolerance = 228;
         let db = null;
         let auth = null;
         let currentUser = null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'air-combat-arcade-app';
+
+        // Görsel bir harita mı kontrol eder (Haritaların arka planı silinmez)
+        function isMapAsset(assetName) {
+            if (!assetName) return false;
+            const lower = assetName.toLowerCase();
+            return EXACT_ASSET_NAMES.maps.some(m => m.toLowerCase() === lower);
+        }
+
+        /**
+         * NERF TARZI OTOMATİK BEYAZ ARKA PLAN VE FAZLA BOŞLUK TEMİZLEYİCİ
+         * 1) Dış kenarlardan başlayarak (Flood-Fill) beyaz/açık gri arka plan piksellerini şeffaf yapar (uçağın içindeki parlak beyaz detayları korur).
+         * 2) Kalan kenar piksellerine yumuşatma (feathering) uygular.
+         * 3) Etrafındaki gereksiz şeffaf/beyaz boşlukları kırparak (Auto-Crop) görseli tam merkeze oturtur.
+         */
+        function processAndCleanSprite(img, assetName) {
+            if (!removeWhiteBgEnabled || isMapAsset(assetName)) {
+                return img;
+            }
+
+            try {
+                const w = img.naturalWidth || img.width;
+                const h = img.naturalHeight || img.height;
+                if (!w || !h) return img;
+
+                const offCanvas = document.createElement('canvas');
+                offCanvas.width = w;
+                offCanvas.height = h;
+                const octx = offCanvas.getContext('2d', { willReadFrequently: true });
+                octx.drawImage(img, 0, 0);
+
+                const imgData = octx.getImageData(0, 0, w, h);
+                const data = imgData.data;
+                const totalPixels = w * h;
+                const visited = new Uint8Array(totalPixels);
+                const queue = new Int32Array(totalPixels);
+                let head = 0, tail = 0;
+
+                const threshold = whiteBgTolerance; // Varsayılan 228
+
+                function isBackgroundLike(idx) {
+                    const p = idx * 4;
+                    const r = data[p], g = data[p + 1], b = data[p + 2], a = data[p + 3];
+                    if (a < 25) return true;
+                    // Neredeyse beyaz veya çok açık gri/gölge çerçevesi kontrolü
+                    const maxDiff = Math.max(Math.abs(r - g), Math.abs(r - b), Math.abs(g - b));
+                    return (r >= threshold && g >= threshold && b >= threshold && maxDiff <= 28);
+                }
+
+                // Dört kenardaki pikselleri başlangıç noktası olarak kuyruğa ekle
+                for (let x = 0; x < w; x++) {
+                    const topIdx = x;
+                    const botIdx = (h - 1) * w + x;
+                    if (isBackgroundLike(topIdx)) { visited[topIdx] = 1; queue[tail++] = topIdx; }
+                    if (isBackgroundLike(botIdx) && !visited[botIdx]) { visited[botIdx] = 1; queue[tail++] = botIdx; }
+                }
+                for (let y = 0; y < h; y++) {
+                    const leftIdx = y * w;
+                    const rightIdx = y * w + (w - 1);
+                    if (isBackgroundLike(leftIdx) && !visited[leftIdx]) { visited[leftIdx] = 1; queue[tail++] = leftIdx; }
+                    if (isBackgroundLike(rightIdx) && !visited[rightIdx]) { visited[rightIdx] = 1; queue[tail++] = rightIdx; }
+                }
+
+                // Flood-Fill ile dıştan içe tüm beyaz arka planı şeffaf yap
+                while (head < tail) {
+                    const curr = queue[head++];
+                    const p = curr * 4;
+                    data[p + 3] = 0; // Tam şeffaf yap
+
+                    const cx = curr % w;
+                    const cy = (curr / w) | 0;
+
+                    // 4 komşu piksel
+                    if (cx > 0) {
+                        const n = curr - 1;
+                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
+                    }
+                    if (cx < w - 1) {
+                        const n = curr + 1;
+                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
+                    }
+                    if (cy > 0) {
+                        const n = curr - w;
+                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
+                    }
+                    if (cy < h - 1) {
+                        const n = curr + w;
+                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
+                    }
+                }
+
+                // Kenar yumuşatma (Anti-aliasing hale temizliği) ve Bounding-Box (Auto-Crop) hesaplama
+                let minX = w, minY = h, maxX = 0, maxY = 0;
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const idx = y * w + x;
+                        const p = idx * 4;
+                        if (data[p + 3] === 0) continue;
+
+                        // Eğer komşularından biri şeffaf olduysa ve bu piksel çok açık renkliyse yarı şeffaf yap (beyaz haleyi yok et)
+                        const hasClearedNeighbor =
+                            (x > 0 && visited[idx - 1]) ||
+                            (x < w - 1 && visited[idx + 1]) ||
+                            (y > 0 && visited[idx - w]) ||
+                            (y < h - 1 && visited[idx + w]);
+
+                        if (hasClearedNeighbor) {
+                            const lum = (data[p] + data[p + 1] + data[p + 2]) / 3;
+                            if (lum > threshold - 25) {
+                                data[p + 3] = Math.min(data[p + 3], Math.max(0, Math.round((255 - lum) * 3)));
+                            }
+                        }
+
+                        if (data[p + 3] > 20) {
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+
+                octx.putImageData(imgData, 0, 0);
+
+                // Eğer geçerli bir obje alanı bulunduysa etrafındaki fazla boşlukları kırp (Auto-Crop)
+                if (maxX > minX && maxY > minY) {
+                    const pad = 2;
+                    const cropX = Math.max(0, minX - pad);
+                    const cropY = Math.max(0, minY - pad);
+                    const cropW = Math.min(w - cropX, (maxX - minX) + 1 + pad * 2);
+                    const cropH = Math.min(h - cropY, (maxY - minY) + 1 + pad * 2);
+
+                    const croppedCanvas = document.createElement('canvas');
+                    croppedCanvas.width = cropW;
+                    croppedCanvas.height = cropH;
+                    const cctx = croppedCanvas.getContext('2d');
+                    cctx.drawImage(offCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+                    return croppedCanvas;
+                }
+
+                return offCanvas;
+            } catch (err) {
+                // CORS kısıtlaması olmayan tüm görsellerde temizlenmiş canvas döner; hata olursa orijinali döner
+                return img;
+            }
+        }
+
+        function registerLoadedSprite(assetName, rawImg) {
+            rawOriginalImages[assetName] = rawImg;
+            const cleaned = processAndCleanSprite(rawImg, assetName);
+            loadedSprites[assetName] = cleaned;
+            loadedSprites[assetName.toLowerCase()] = cleaned;
+            updateLoadedAssetCounter();
+            renderMenuPreview();
+        }
+
+        function reprocessAllLoadedSprites() {
+            Object.keys(rawOriginalImages).forEach(assetName => {
+                const rawImg = rawOriginalImages[assetName];
+                const cleaned = processAndCleanSprite(rawImg, assetName);
+                loadedSprites[assetName] = cleaned;
+                loadedSprites[assetName.toLowerCase()] = cleaned;
+            });
+            initMenuUI();
+        }
 
         function updateLoadedAssetCounter() {
             let count = 0;
@@ -593,16 +779,30 @@
         function normalizeGithubUrl(inputUrl) {
             if (!inputUrl) return "";
             let url = inputUrl.trim();
+            if (url === "./" || url === ".") return "./";
 
             // Eğer kullanıcı örnek bir görsel linki yapıştırdıysa (örn: .../Avcı_Kaan.png), dosya adını kesip klasörü al
-            url = url.replace(/\/[^\/]+\.(png|jpg|jpeg|webp)(\?.*)?$/i, '/');
+            url = url.replace(/\/[^\/]+\.(png|jpg|jpeg|webp|html)(\?.*)?$/i, '/');
+
+            // https://kullanici.github.io/repo/ -> https://raw.githubusercontent.com/kullanici/repo/main/
+            if (url.includes('.github.io')) {
+                try {
+                    const u = new URL(url);
+                    const user = u.hostname.split('.')[0];
+                    const pathParts = u.pathname.split('/').filter(Boolean);
+                    if (pathParts.length >= 1) {
+                        const repo = pathParts[0];
+                        const subPath = pathParts.slice(1).join('/');
+                        url = `https://raw.githubusercontent.com/${user}/${repo}/main/${subPath ? subPath + '/' : ''}`;
+                    }
+                } catch (e) {}
+            }
 
             // https://github.com/kullanici/repo/tree/main/klasor -> https://raw.githubusercontent.com/kullanici/repo/main/klasor/
             if (url.includes('github.com') && !url.includes('raw.githubusercontent.com')) {
                 url = url.replace('https://github.com/', 'https://raw.githubusercontent.com/');
                 url = url.replace('/tree/', '/');
                 url = url.replace('/blob/', '/');
-                // Eğer sadece repo kök adresi yazıldıysa (örn: https://github.com/kullanici/repo) sonuna /main/ ekle
                 const parts = url.replace('https://raw.githubusercontent.com/', '').split('/').filter(Boolean);
                 if (parts.length === 2) {
                     url = `https://raw.githubusercontent.com/${parts[0]}/${parts[1]}/main/`;
@@ -611,6 +811,22 @@
 
             if (!url.endsWith('/')) url += '/';
             return url;
+        }
+
+        // Eğer index.html GitHub'a görsellerle aynı klasöre yüklendiyse (./) otomatik olarak aynı klasörden çekmeyi dener
+        function tryAutoLoadFromRelativeFolder() {
+            ALL_66_ASSETS.forEach(assetName => {
+                ['.png', '.jpg', '.webp'].forEach(extVariant => {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        if (!loadedSprites[assetName]) {
+                            registerLoadedSprite(assetName, img);
+                        }
+                    };
+                    img.src = `./${encodeURIComponent(assetName.normalize('NFC'))}${extVariant}`;
+                });
+            });
         }
 
         // GitHub Base URL üzerinden tüm 66 görseli otomatik çekme (Alternatif uzantı ve Unicode NFC/NFD destekli)
@@ -624,10 +840,7 @@
                     const img = new Image();
                     img.crossOrigin = "anonymous";
                     img.onload = () => {
-                        loadedSprites[assetName] = img;
-                        loadedSprites[assetName.toLowerCase()] = img;
-                        updateLoadedAssetCounter();
-                        renderMenuPreview();
+                        registerLoadedSprite(assetName, img);
                     };
                     img.onerror = () => {
                         // İlk deneme başarısızsa alternatif uzantıyı (.png <-> .jpg) veya NFD/NFC Türkçe karakter kodlamasını dene
@@ -654,10 +867,8 @@
                 reader.onload = function(evt) {
                     const img = new Image();
                     img.onload = function() {
-                        loadedSprites[cleanName] = img;
-                        loadedSprites[cleanName.toLowerCase()] = img;
-                        updateLoadedAssetCounter();
-                        renderMenuPreview();
+                        registerLoadedSprite(cleanName, img);
+                        initMenuUI();
                     };
                     img.src = evt.target.result;
                 };
@@ -1963,6 +2174,31 @@
         });
         document.getElementById('btnSaveToFirebase').addEventListener('click', saveConfigToFirebase);
 
+        // Beyaz Arka Plan Temizleme (Auto-Keying) Kontrolleri
+        document.getElementById('chkRemoveWhiteBg').addEventListener('change', (e) => {
+            removeWhiteBgEnabled = e.target.checked;
+            reprocessAllLoadedSprites();
+        });
+        document.getElementById('rngWhiteTolerance').addEventListener('input', (e) => {
+            whiteBgTolerance = parseInt(e.target.value, 10);
+            document.getElementById('valWhiteTolerance').innerText = whiteBgTolerance;
+            reprocessAllLoadedSprites();
+        });
+
+        // Tek Tıkla index.html İndirme Butonu (GitHub'a yüklemek için)
+        document.getElementById('btnDownloadHtml').addEventListener('click', () => {
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "index.html";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
         document.getElementById('btnCopyManifest').addEventListener('click', () => {
             const listText = ALL_66_ASSETS.map(n => `${n}${githubFileExt}`).join('\n');
             const tempInput = document.createElement('textarea');
@@ -1980,6 +2216,7 @@
         // Başlangıç
         initMenuUI();
         updateLoadedAssetCounter();
+        tryAutoLoadFromRelativeFolder();
         initFirebase();
         gameLoop();
     </script>
