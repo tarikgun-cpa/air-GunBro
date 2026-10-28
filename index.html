@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Combat: Arcade Kabin Simülatörü</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #050811;
+            color: #e2e8f0;
+            overflow: hidden;
+            user-select: none;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        .neon-border {
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.4), inset 0 0 10px rgba(0, 240, 255, 0.2);
+            border: 1px solid rgba(0, 240, 255, 0.7);
+        }
+        .neon-border-red {
+            box-shadow: 0 0 14px rgba(255, 42, 85, 0.5), inset 0 0 10px rgba(255, 42, 85, 0.25);
+            border: 1px solid rgba(255, 42, 85, 0.8);
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.7);
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.6);
+            border-radius: 3px;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .arcade-crosshair {
+            cursor: none;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex flex-col justify-between relative bg-slate-950">
+
+    <!-- ÜST BAR (Her zaman görünür) -->
+    <header class="w-full h-14 bg-slate-900/95 border-b border-cyan-500/40 px-4 flex items-center justify-between z-30 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+            <div class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></div>
+            <h1 class="font-orbitron text-lg md:text-2xl font-black tracking-wider bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                AIR COMBAT <span class="text-xs font-normal text-amber-300 border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 rounded ml-1">ARCADE SHOOTER CABINET</span>
+            </h1>
+        </div>
+
+        <!-- Bulut (Firebase) & GitHub Görsel Yöneticisi Butonları -->
+        <div class="flex items-center space-x-2.5">
+            <div id="cloudStatusBadge" class="hidden sm:flex items-center space-x-1.5 bg-slate-950 border border-slate-700 px-2.5 py-1 rounded text-xs text-slate-400">
+                <span id="cloudStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="cloudStatusText">Bulut Bağlanıyor...</span>
+            </div>
+
+            <button id="btnOpenAssetModal" class="bg-emerald-950/90 hover:bg-emerald-900 text-emerald-200 border border-emerald-500/60 px-3 py-1.5 rounded text-xs md:text-sm font-orbitron font-bold flex items-center space-x-2 transition shadow-lg">
+                <span>☁️ Görsel & GitHub Kaydı (<span id="loadedAssetCount">0/66</span>)</span>
+            </button>
+
+            <label for="localSpriteUploader" class="cursor-pointer bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 px-3 py-1.5 rounded text-xs md:text-sm font-semibold flex items-center space-x-1.5 transition">
+                <span>📁 Klasörden Seç</span>
+            </label>
+            <input type="file" id="localSpriteUploader" multiple accept="image/*" class="hidden">
+            
+            <button id="btnBackToMenu" class="hidden bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-500/60 px-3 py-1.5 rounded text-xs md:text-sm font-orbitron font-bold transition">
+                ÇIKIŞ (ESC)
+            </button>
+        </div>
+    </header>
+
+    <!-- ANA OYUN VE MENÜ ALANI -->
+    <main class="relative flex-1 w-full h-full overflow-hidden flex items-center justify-center">
+        
+        <!-- OYUN KANVASI (Arcade Nerf Tarzı 1. Şahıs / Hareketli Uçak-Silah ve Derinlikli Hedefler) -->
+        <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
+
+        <!-- 1. ANA MENÜ EKRANI (HANGAR & 9 HARİTA SEÇİMİ) -->
+        <div id="menuScreen" class="relative z-10 w-full h-full max-w-7xl mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 overflow-y-auto custom-scroll">
+            
+            <!-- SOL: 10 AVCI UÇAĞI SEÇİMİ -->
+            <div class="flex-1 bg-slate-900/90 border border-cyan-500/40 rounded-xl p-4 flex flex-col backdrop-blur-md shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 mb-3">
+                    <div>
+                        <h2 class="font-orbitron text-base md:text-lg font-bold text-cyan-400 tracking-wide">1. AVCI UÇAĞI (SİLAH) SEÇİMİ</h2>
+                        <p class="text-xs text-slate-400">Ekranda nişangahla hareket edecek avcı uçağınızı seçin</p>
+                    </div>
+                    <span id="selectedPlaneBadge" class="bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 px-2.5 py-1 rounded text-xs font-orbitron font-bold">Avcı_Kaan</span>
+                </div>
+
+                <!-- 10 Uçak Grid -->
+                <div id="planeGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-4 overflow-y-auto custom-scroll pr-1 max-h-56 sm:max-h-64">
+                    <!-- JS ile doldurulacak -->
+                </div>
+
+                <!-- Seçili Uçak Özellik Barları -->
+                <div class="mt-auto bg-slate-950/95 border border-slate-800 rounded-lg p-4 flex flex-col sm:flex-row items-center gap-5">
+                    <div class="w-32 h-32 bg-slate-900 rounded-lg border border-cyan-500/30 flex flex-col items-center justify-center relative shrink-0 shadow-inner">
+                        <canvas id="previewPlaneCanvas" width="110" height="110"></canvas>
+                        <span class="text-[10px] text-cyan-400 font-mono absolute bottom-1" id="previewSpriteName">Avcı_Kaan</span>
+                    </div>
+
+                    <div class="flex-1 w-full space-y-2">
+                        <div class="flex justify-between items-baseline">
+                            <h3 id="planeTitle" class="font-orbitron text-lg font-bold text-white">TF-X KAAN</h3>
+                            <span id="planeRole" class="text-xs text-amber-400 font-semibold">5. Nesil Üstünlük Avcısı</span>
+                        </div>
+
+                        <div class="space-y-1.5 text-xs">
+                            <div class="flex items-center">
+                                <span class="w-28 text-slate-400 font-semibold">CAN (GÖVDE):</span>
+                                <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5"><div id="statHp" class="h-full bg-emerald-500 rounded-full transition-all duration-300"></div></div>
+                                <span id="valHp" class="w-10 text-right font-mono text-emerald-400">200</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-28 text-slate-400 font-semibold">DAYANIKLILIK:</span>
+                                <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5"><div id="statArmor" class="h-full bg-cyan-400 rounded-full transition-all duration-300"></div></div>
+                                <span id="valArmor" class="w-10 text-right font-mono text-cyan-300">180</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-28 text-slate-400 font-semibold">SALDIRI GÜCÜ:</span>
+                                <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5"><div id="statDamage" class="h-full bg-rose-500 rounded-full transition-all duration-300"></div></div>
+                                <span id="valDamage" class="w-10 text-right font-mono text-rose-400">90</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-28 text-slate-400 font-semibold">HAREKET HIZI:</span>
+                                <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5"><div id="statSpeed" class="h-full bg-amber-400 rounded-full transition-all duration-300"></div></div>
+                                <span id="valSpeed" class="w-10 text-right font-mono text-amber-300">8.5</span>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="w-28 text-slate-400 font-semibold">YAKIT KAPASİTESİ:</span>
+                                <div class="flex-1 h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5"><div id="statFuel" class="h-full bg-orange-500 rounded-full transition-all duration-300"></div></div>
+                                <span id="valFuel" class="w-10 text-right font-mono text-orange-400">130s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SAĞ: 9 HARİTA SEÇİMİ (3 İSTİLA + 6 DÜNYA) & BAŞLAT -->
+            <div class="flex-1 bg-slate-900/90 border border-cyan-500/40 rounded-xl p-4 flex flex-col backdrop-blur-md shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 mb-3">
+                    <div>
+                        <h2 class="font-orbitron text-base md:text-lg font-bold text-amber-400 tracking-wide">2. OPERASYON HARİTASI (9 BÖLGE)</h2>
+                        <p class="text-xs text-slate-400">3 Uzay İstilası ve 6 Dünya Operasyon Haritası</p>
+                    </div>
+                    <span id="selectedMapBadge" class="bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2.5 py-1 rounded text-xs font-orbitron font-bold">Dunya_Okyanus</span>
+                </div>
+
+                <!-- 9 Harita Grid -->
+                <div id="mapGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-4 overflow-y-auto custom-scroll pr-1 flex-1">
+                    <!-- JS ile doldurulacak -->
+                </div>
+
+                <!-- Arcade Kabin Kontrolleri ve Başlat -->
+                <div class="mt-auto bg-slate-950/95 border border-slate-800 rounded-lg p-3.5 flex flex-col gap-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-300">
+                        <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                            <div class="text-cyan-400 font-bold font-mono">FARE / WASD / OK</div>
+                            <div class="text-[10px] text-slate-400">Uçağı & Nişangahı Hareket Ettirir</div>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                            <div class="text-rose-400 font-bold font-mono">SOL TIK / SPACE</div>
+                            <div class="text-[10px] text-slate-400">Sonsuz Ana Makineli Tüfek</div>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                            <div class="text-amber-400 font-bold font-mono">Q / E / SAĞ TIK</div>
+                            <div class="text-[10px] text-slate-400">Sol & Sağ Kanat Roketleri</div>
+                        </div>
+                        <div class="bg-slate-900 p-2 rounded border border-slate-800">
+                            <div class="text-emerald-400 font-bold font-mono">GELEN FÜZELER</div>
+                            <div class="text-[10px] text-slate-400">Vurarak İmha Et veya Kaçın!</div>
+                        </div>
+                    </div>
+
+                    <button id="btnStartGame" class="w-full py-3.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-orbitron font-black text-lg tracking-widest rounded-lg shadow-lg shadow-cyan-500/30 border border-cyan-300/60 transition transform active:scale-[0.99] flex items-center justify-center space-x-3">
+                        <span>🕹️ ARCADE KABİNİ BAŞLAT (JOIN NOW)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. OYUN İÇİ KOKPİT / ARCADE KABİN HUD -->
+        <div id="hudScreen" class="hidden absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4">
+            
+            <!-- Üst Gösterge Paneli -->
+            <div class="flex flex-wrap justify-between items-start gap-4 w-full max-w-7xl mx-auto">
+                
+                <!-- Sol Panel: Can, Dayanıklılık, Yakıt Barları -->
+                <div class="bg-slate-950/85 border-2 border-cyan-500/50 rounded-xl p-3 w-72 backdrop-blur-md shadow-2xl space-y-2 pointer-events-auto">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1">
+                        <span id="hudPlaneName" class="font-orbitron text-xs font-bold text-cyan-400">AVCI_KAAN</span>
+                        <span id="hudMapType" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-bold">DÜNYA_OKYANUS</span>
+                    </div>
+
+                    <!-- Can (HP) -->
+                    <div>
+                        <div class="flex justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-emerald-400">✚ CAN (HP)</span>
+                            <span id="hudHpText" class="font-mono text-white">200 / 200</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
+                            <div id="hudHpBar" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-150" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Dayanıklılık (Zırh/Kalkan) -->
+                    <div>
+                        <div class="flex justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-cyan-400">🛡️ DAYANIKLILIK (KALKAN)</span>
+                            <span id="hudShieldText" class="font-mono text-white">180 / 180</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
+                            <div id="hudShieldBar" class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-150" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Yakıt -->
+                    <div>
+                        <div class="flex justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-amber-400">⛽ YAKIT BAR</span>
+                            <span id="hudFuelText" class="font-mono text-white">100%</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
+                            <div id="hudFuelBar" class="h-full bg-gradient-to-r from-red-500 via-amber-500 to-yellow-400 rounded-full transition-all duration-150" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orta Panel: Arcade Skor, Dalga ve Boss Barı -->
+                <div class="flex flex-col items-center">
+                    <div class="bg-slate-950/90 border-2 border-cyan-500/50 rounded-xl px-7 py-2 backdrop-blur-md text-center shadow-2xl">
+                        <div class="text-[10px] text-cyan-400 font-orbitron tracking-widest font-bold">ARCADE SCORE</div>
+                        <div id="hudScore" class="font-orbitron text-3xl font-black text-white tracking-wider">000000</div>
+                        <div id="hudWaveInfo" class="text-xs font-bold text-amber-400 mt-0.5">DALGA 1 - HEDEFLERİ VUR!</div>
+                    </div>
+
+                    <!-- Boss Can Barı -->
+                    <div id="bossHudContainer" class="hidden mt-3 w-80 sm:w-[420px] bg-rose-950/95 border-2 border-rose-500 rounded-xl p-2.5 backdrop-blur-md shadow-2xl">
+                        <div class="flex justify-between items-center text-xs font-orbitron font-bold text-rose-200 mb-1">
+                            <span id="bossHudName">⚠ BOSS HEDEF</span>
+                            <span id="bossHudHpText">2000 HP</span>
+                        </div>
+                        <div class="w-full h-3.5 bg-slate-950 rounded-full overflow-hidden border border-rose-400/50 p-0.5">
+                            <div id="bossHudBar" class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-amber-400 rounded-full transition-all duration-100" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ Panel: Sonsuz Makineli & Sağ/Sol Kanat Füze Dolum Barları -->
+                <div class="bg-slate-950/85 border-2 border-cyan-500/50 rounded-xl p-3 w-72 backdrop-blur-md shadow-2xl space-y-2.5 pointer-events-auto">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-1">
+                        <span class="font-orbitron text-xs font-bold text-rose-400">SİLAH & KANAT ROKETLERİ</span>
+                        <span id="hudWeaponLevel" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">GÜÇ SV.1</span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs bg-slate-900/90 px-2.5 py-1.5 rounded border border-slate-800">
+                        <span class="text-slate-300 font-semibold">ANA MAKİNELİ (SOL TIK)</span>
+                        <span class="font-orbitron text-emerald-400 font-bold text-xs">∞ SONSUZ</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <!-- Sol Kanat (Avcı_Füze_Sol) -->
+                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800 flex flex-col">
+                            <div class="flex justify-between items-center text-[10px] text-slate-300 font-bold mb-1">
+                                <span>SOL ROKET [Q]</span>
+                                <span id="leftMissileCount" class="font-mono text-cyan-300">4/4</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
+                                <div id="leftMissileBar" class="h-full bg-cyan-400 transition-all duration-100" style="width: 100%"></div>
+                            </div>
+                            <span class="text-[9px] text-slate-400 mt-1 font-mono truncate">Avcı_Füze_Sol</span>
+                        </div>
+
+                        <!-- Sağ Kanat (Avcı_Füze_Sag) -->
+                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800 flex flex-col">
+                            <div class="flex justify-between items-center text-[10px] text-slate-300 font-bold mb-1">
+                                <span>SAĞ ROKET [E]</span>
+                                <span id="rightMissileCount" class="font-mono text-cyan-300">4/4</span>
+                            </div>
+                            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
+                                <div id="rightMissileBar" class="h-full bg-cyan-400 transition-all duration-100" style="width: 100%"></div>
+                            </div>
+                            <span class="text-[9px] text-slate-400 mt-1 font-mono truncate">Avcı_Füze_Sag</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alt HUD: Hızlı Kanat Roketi Butonları -->
+            <div class="flex justify-between items-end w-full max-w-7xl mx-auto pointer-events-auto">
+                <div class="bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-lg text-xs text-slate-300 hidden md:block">
+                    🎯 <strong class="text-cyan-400">Arcade Kabin Modu:</strong> Uçağınız nişangahla birlikte (Yukarı/Aşağı/Sağa/Sola) hareket eder. Büyüyerek size gelen füzeleri havada vurun veya uçağı çekerek kaçının!
+                </div>
+
+                <div class="flex space-x-2 ml-auto">
+                    <button id="btnFireLeftMissile" class="bg-cyan-950/90 hover:bg-cyan-900 active:scale-95 text-cyan-200 border border-cyan-500/60 px-4 py-2.5 rounded-xl font-orbitron text-xs font-bold shadow-lg">
+                        🚀 SOL FÜZE (Q)
+                    </button>
+                    <button id="btnFireBothMissiles" class="bg-rose-950/90 hover:bg-rose-900 active:scale-95 text-rose-200 border border-rose-500/60 px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold shadow-lg">
+                        💥 ÇİFT KANAT SALVO (SAĞ TIK)
+                    </button>
+                    <button id="btnFireRightMissile" class="bg-cyan-950/90 hover:bg-cyan-900 active:scale-95 text-cyan-200 border border-cyan-500/60 px-4 py-2.5 rounded-xl font-orbitron text-xs font-bold shadow-lg">
+                        🚀 SAĞ FÜZE (E)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. FIREBASE & GITHUB GÖRSEL İSİMLERİ YÖNETİM MODALI -->
+        <div id="assetManagerModal" class="hidden absolute inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="bg-slate-900 border-2 border-cyan-500/70 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col p-6 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                    <div>
+                        <h2 class="font-orbitron text-xl font-black text-cyan-400">☁️ FIREBASE KAYIT & GITHUB GÖRSEL ŞEMASI (66 DOSYA)</h2>
+                        <p class="text-xs text-slate-400">Ekran görüntünüzdeki 66 görsel ismi sisteme kodlanmıştır. Ayarlarınızı Firebase'e kaydedip görsellerinizi GitHub'a yükleyebilirsiniz.</p>
+                    </div>
+                    <button id="btnCloseAssetModal" class="text-slate-400 hover:text-white bg-slate-800 px-3 py-1.5 rounded-lg font-bold text-sm">✕ KAPAT</button>
+                </div>
+
+                <!-- GitHub Klasör Yolu ve Uzantı Ayarı -->
+                <div class="bg-slate-950/90 border border-cyan-500/30 rounded-xl p-3.5 mb-3 text-xs space-y-2">
+                    <div class="font-orbitron font-bold text-amber-400 flex items-center justify-between">
+                        <span>🚀 ADIM ADIM GITHUB & FIREBASE KURULUM REHBERİ</span>
+                        <span class="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-500/40">Otomatik Raw URL Dönüştürücü Aktif</span>
+                    </div>
+                    <ol class="list-decimal list-inside text-slate-300 space-y-1 text-[11px] leading-relaxed">
+                        <li><strong>GitHub'da Depo (Repository) Açın:</strong> GitHub hesabınızda <strong class="text-white">Public (Herkese Açık)</strong> bir repo oluşturun (Örn: <code class="text-cyan-300">air-combat-assets</code>) ve 66 görselinizi içine yükleyin.</li>
+                        <li><strong>Linki Yapıştırın:</strong> GitHub'daki klasörünüzün normal linkini veya herhangi bir görselin linkini aşağıdaki kutuya yapıştırın. (Sistem normal GitHub linklerini otomatik olarak <code class="text-emerald-300">raw.githubusercontent.com</code> adresine dönüştürür).</li>
+                        <li><strong>Kaydedin:</strong> Uzantınızı seçip <strong class="text-emerald-400">"💾 FIREBASE'E KAYDET & YÜKLE"</strong> butonuna basın. Ayarınız buluta kaydedilir ve 66 görselin tamamı otomatik çekilir.</li>
+                    </ol>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-slate-950 p-4 rounded-xl border border-slate-800 mb-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-cyan-300 mb-1">GITHUB REPO / KLASÖR VEYA RAW URL ADRESİ:</label>
+                        <input id="inputGithubBaseUrl" type="text" placeholder="Örn: https://github.com/kullanici/repo/tree/main/gorseller" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs text-white font-mono focus:border-cyan-400 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-cyan-300 mb-1">DOSYA UZANTISI:</label>
+                        <select id="selectFileExt" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-2 text-xs text-white font-mono outline-none">
+                            <option value=".png">.png (Örn: Avcı_Kaan.png)</option>
+                            <option value=".jpg">.jpg (Örn: Avcı_Kaan.jpg)</option>
+                            <option value=".webp">.webp (Örn: Avcı_Kaan.webp)</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button id="btnSaveToFirebase" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-orbitron font-bold text-xs py-2.5 px-4 rounded shadow-lg transition">
+                            💾 FIREBASE'E KAYDET & YÜKLE
+                        </button>
+                    </div>
+                </div>
+
+                <div id="firebaseSaveFeedback" class="hidden mb-3 px-4 py-2 rounded-lg bg-emerald-950/90 border border-emerald-500 text-emerald-200 text-xs font-semibold"></div>
+
+                <!-- 66 Görselin Tam İsim Listesi -->
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-amber-400">EKRAN GÖRÜNTÜSÜNDEKİ 66 GÖRSELİN TAM KOD İSİMLERİ:</span>
+                    <button id="btnCopyManifest" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 px-3 py-1 rounded text-xs font-semibold">
+                        📋 Tüm İsim Listesini Kopyala
+                    </button>
+                </div>
+
+                <div id="assetManifestGrid" class="flex-1 overflow-y-auto custom-scroll grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono">
+                    <!-- JS ile 66 görselin tamamı ve yüklenme durumu listelenecek -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. OYUN SONU MODAL EKRANI -->
+        <div id="gameOverModal" class="hidden absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="bg-slate-900 border-2 border-cyan-500/60 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
+                <div id="modalIcon" class="w-16 h-16 mx-auto rounded-full bg-rose-500/20 border border-rose-500 flex items-center justify-center text-3xl">💥</div>
+                <h2 id="modalTitle" class="font-orbitron text-2xl font-black text-white tracking-wider">SORTİ SONA ERDİ!</h2>
+                <p id="modalReason" class="text-sm text-slate-300">Düşman füzeleri gövde bütünlüğünü sıfırladı.</p>
+                
+                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 grid grid-cols-2 gap-3 text-left">
+                    <div>
+                        <div class="text-[10px] text-slate-500 font-bold">TOPLAM SKOR</div>
+                        <div id="modalScore" class="font-orbitron text-lg font-bold text-cyan-400">0</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-500 font-bold">VURULAN HEDEF</div>
+                        <div id="modalKills" class="font-orbitron text-lg font-bold text-amber-400">0</div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button id="btnModalMenu" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-orbitron text-xs font-bold border border-slate-600 transition">
+                        HANGARA DÖN
+                    </button>
+                    <button id="btnModalRestart" class="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg font-orbitron text-xs font-bold shadow-lg shadow-cyan-500/30 transition">
+                        TEKRAR OYNA
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FIREBASE BAĞLANTISI VE OYUN KODU -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        /*************************************************************************
+         * 1. EKRAN GÖRÜNTÜSÜNDEKİ 66 GÖRSELİN BİREBİR İSİM ŞEMASI (MANIFEST)
+         *************************************************************************/
+        const EXACT_ASSET_NAMES = {
+            // 10 Avcı Uçağı (Ekranın altında nişangahla hareket eden oyuncu uçakları)
+            fighters: [
+                'Avcı_Kaan', 'Avcı_Kizilelma', 'Avcı_J20', 'Avcı_F35', 'Avcı_F22',
+                'Avcı_B2', 'Avcı_Su57', 'Avcı_Ege', 'Avcı_Tarik', 'Avcı_Uras'
+            ],
+            // 2 Kanat Füzesi (Sağ ve Sol kanatlar için ayrı)
+            playerMissiles: [
+                'Avcı_Füze_Sag', 'Avcı_Füze_Sol'
+            ],
+            // 9 Harita (3 İstila + 6 Dünya)
+            maps: [
+                'İstila_Uzay', 'İstila_Okyanus', 'İstila_city',
+                'Dunya_OkyanusKara', 'Dunya_OkyanusDonanma', 'Dunya_OkyanusCity',
+                'Dunya_OkyanusKutup', 'Dunya_OkyanusÇöl', 'Dunya_Okyanus'
+            ],
+            // 5 Bonus
+            bonuses: [
+                'Bonus_Yakıt', 'Bonus_Kalkan', 'Bonus_Cephane', 'Bonus_Tamir', 'Bonus_can'
+            ],
+            // 11 Uzay Hedefi + 6 Uzay Boss + 3 Uzay Hedef Füzesi
+            spaceTargets: [
+                'Uzay_Hedef1', 'Uzay_Hedef2', 'Uzay_Hedef3', 'Uzay_Hedef4', 'Uzay_Hedef5',
+                'Uzay_Hedef6', 'Uzay_Hedef7', 'Uzay_Hedef8', 'Uzay_Hedef9', 'Uzay_Hedef10', 'Uzay_Hedef11'
+            ],
+            spaceBosses: [
+                'Uzay_Hedef_Boss', 'Uzay_Hedef_Boss2', 'Uzay_Hedef_Boss3',
+                'Uzay_Hedef_Boss4', 'Uzay_Hedef_Boss5', 'Uzay_Hedef_Boss6'
+            ],
+            spaceMissiles: [
+                'Uzay_Hedef_Fuze1', 'Uzay_Hedef_Fuze2', 'Uzay_Hedef_Fuze3'
+            ],
+            // 11 Dünya Hedefi + 6 Dünya Boss + 3 Dünya Hedef Füzesi
+            worldTargets: [
+                'Dunya_Hedef1', 'Dunya_Hedef2', 'Dunya_Hedef3', 'Dunya_Hedef4', 'Dunya_Hedef5',
+                'Dunya_Hedef6', 'Dunya_Hedef7', 'Dunya_Hedef8', 'Dunya_Hedef9', 'Dunya_Hedef10', 'Dunya_Hedef11'
+            ],
+            worldBosses: [
+                'Dunya_Hedef_Boss', 'Dunya_Hedef_Boss2', 'Dunya_Hedef_Boss3',
+                'Dunya_Hedef_Boss4', 'Dunya_Hedef_Boss5', 'Dunya_Hedef_Boss6'
+            ],
+            worldMissiles: [
+                'Dunya_Hedef_Fuze1', 'Dunya_Hedef_Fuze2', 'Dunya_Hedef_Fuze3'
+            ]
+        };
+
+        // Tüm 66 görselin düz listesi
+        const ALL_66_ASSETS = [
+            ...EXACT_ASSET_NAMES.fighters,
+            ...EXACT_ASSET_NAMES.playerMissiles,
+            ...EXACT_ASSET_NAMES.maps,
+            ...EXACT_ASSET_NAMES.bonuses,
+            ...EXACT_ASSET_NAMES.spaceTargets,
+            ...EXACT_ASSET_NAMES.spaceBosses,
+            ...EXACT_ASSET_NAMES.spaceMissiles,
+            ...EXACT_ASSET_NAMES.worldTargets,
+            ...EXACT_ASSET_NAMES.worldBosses,
+            ...EXACT_ASSET_NAMES.worldMissiles
+        ];
+
+        /*************************************************************************
+         * 2. DETAYLI OYUN VERİTABANI (Uçak Özellikleri, Haritalar, Hedefler)
+         *************************************************************************/
+        const FIGHTER_PLANES = [
+            { id: 'Avcı_Kaan', name: 'TF-X KAAN', role: '5. Nesil Çok Rollü Avcı', hp: 200, armor: 180, damage: 90, speed: 8.8, fuel: 135, color: '#38bdf8', accent: '#f43f5e', wingType: 'stealth' },
+            { id: 'Avcı_Kizilelma', name: 'BAYRAKTAR KIZILELMA', role: 'İnsansız Savaş Uçağı', hp: 165, armor: 155, damage: 95, speed: 9.8, fuel: 150, color: '#64748b', accent: '#ef4444', wingType: 'canard' },
+            { id: 'Avcı_J20', name: 'CHENGDU J-20', role: 'Uzun Menzil Önleme', hp: 195, armor: 160, damage: 86, speed: 8.7, fuel: 145, color: '#334155', accent: '#eab308', wingType: 'canard' },
+            { id: 'Avcı_F35', name: 'F-35 LIGHTNING II', role: 'Görünmez Taarruz Avcısı', hp: 185, armor: 175, damage: 85, speed: 8.2, fuel: 135, color: '#475569', accent: '#38bdf8', wingType: 'stealth' },
+            { id: 'Avcı_F22', name: 'F-22 RAPTOR', role: 'Hava Üstünlük Avcısı', hp: 195, armor: 175, damage: 90, speed: 9.2, fuel: 125, color: '#94a3b8', accent: '#fbbf24', wingType: 'stealth' },
+            { id: 'Avcı_B2', name: 'B-2 SPIRIT', role: 'Ağır Hayalet Bombardıman', hp: 280, armor: 240, damage: 115, speed: 6.8, fuel: 180, color: '#1e293b', accent: '#06b6d4', wingType: 'flyingWing' },
+            { id: 'Avcı_Su57', name: 'SU-57 FELON', role: 'Süper Manevra Avcısı', hp: 210, armor: 165, damage: 92, speed: 9.0, fuel: 130, color: '#60a5fa', accent: '#f87171', wingType: 'swept' },
+            { id: 'Avcı_Ege', name: 'AVCI EGE', role: 'Ege Hava Muhafızı', hp: 185, armor: 165, damage: 86, speed: 9.3, fuel: 135, color: '#0284c7', accent: '#e2e8f0', wingType: 'swept' },
+            { id: 'Avcı_Tarik', name: 'AVCI TARIK', role: 'Yıldırım Taarruz Jeti', hp: 180, armor: 155, damage: 98, speed: 9.5, fuel: 125, color: '#4f46e5', accent: '#f59e0b', wingType: 'canard' },
+            { id: 'Avcı_Uras', name: 'AVCI URAS', role: 'Ağır Zırhlı Önleme', hp: 235, armor: 205, damage: 90, speed: 8.0, fuel: 145, color: '#0f766e', accent: '#2dd4bf', wingType: 'stealth' }
+        ];
+
+        const GAME_MAPS = [
+            // 3 İstila Haritası
+            { id: 'İstila_Uzay', title: 'İSTİLA: DERİN UZAY', type: 'istila', desc: 'Yörünge üzerinde uzaylı istila filosuna karşı savunma', skyTop: '#020617', skyHorizon: '#1e1b4b', groundColor: '#090d16' },
+            { id: 'İstila_Okyanus', title: 'İSTİLA: OKYANUS', type: 'istila', desc: 'Yanan okyanus üzerinde uzaylı kruvazör savaşı', skyTop: '#0f172a', skyHorizon: '#4c0519', groundColor: '#082f49' },
+            { id: 'İstila_city', title: 'İSTİLA: METROPOL', type: 'istila', desc: 'Kuşatma altındaki metropol semalarında sıcak çatışma', skyTop: '#18181b', skyHorizon: '#431407', groundColor: '#1c1917' },
+            // 6 Dünya Haritası
+            { id: 'Dunya_Okyanus', title: 'DÜNYA: AÇIK OKYANUS', type: 'dunya', desc: 'Güneş batımında açık okyanus üzerinde hava savaşı', skyTop: '#0369a1', skyHorizon: '#f59e0b', groundColor: '#0c4a6e' },
+            { id: 'Dunya_OkyanusDonanma', title: 'DÜNYA: DONANMA FİLOSU', type: 'dunya', desc: 'Açık denizdeki donanma görev gücü üzerinde çatışma', skyTop: '#1e3a8a', skyHorizon: '#38bdf8', groundColor: '#082f49' },
+            { id: 'Dunya_OkyanusKara', title: 'DÜNYA: KIYI & KARA', type: 'dunya', desc: 'Kıyı şeridi ve kara hedefleri üzerinde taarruz', skyTop: '#0284c7', skyHorizon: '#fde047', groundColor: '#365314' },
+            { id: 'Dunya_OkyanusCity', title: 'DÜNYA: KIYI ŞEHRİ', type: 'dunya', desc: 'Kıyı metropolü ve gökdelenler üzerinde önleme', skyTop: '#1d4ed8', skyHorizon: '#fb923c', groundColor: '#1e293b' },
+            { id: 'Dunya_OkyanusKutup', title: 'DÜNYA: KUTUP BÖLGESİ', type: 'dunya', desc: 'Buzullar ve kutup semalarında stratejik sorti', skyTop: '#0284c7', skyHorizon: '#e0f2fe', groundColor: '#bae6fd' },
+            { id: 'Dunya_OkyanusÇöl', title: 'DÜNYA: ÇÖL FIRTINASI', type: 'dunya', desc: 'Kızgın çöl ufku üzerinde süpersonik it dalaşı', skyTop: '#7c2d12', skyHorizon: '#fbbf24', groundColor: '#9a3412' }
+        ];
+
+        const ENEMY_POOLS = {
+            istila: {
+                regular: [
+                    { id: 'Uzay_Hedef1', name: 'Yeşil Biyo-Avcı', hp: 40, speed: 1.4, score: 120, fireRate: 140, missile: 'Uzay_Hedef_Fuze1', color: '#22c55e', shape: 'needle' },
+                    { id: 'Uzay_Hedef2', name: 'Plazma Korveti', hp: 70, speed: 1.1, score: 180, fireRate: 120, missile: 'Uzay_Hedef_Fuze2', color: '#ec4899', shape: 'pod' },
+                    { id: 'Uzay_Hedef3', name: 'Kozmik Denizanası', hp: 55, speed: 1.2, score: 150, fireRate: 130, missile: 'Uzay_Hedef_Fuze1', color: '#a855f7', shape: 'jelly' },
+                    { id: 'Uzay_Hedef4', name: 'Zırhlı İkiz Gemi', hp: 85, speed: 0.9, score: 210, fireRate: 115, missile: 'Uzay_Hedef_Fuze3', color: '#475569', shape: 'twin' },
+                    { id: 'Uzay_Hedef5', name: 'Mavi Mızrak', hp: 50, speed: 1.5, score: 150, fireRate: 125, missile: 'Uzay_Hedef_Fuze3', color: '#3b82f6', shape: 'spear' },
+                    { id: 'Uzay_Hedef6', name: 'Mor Kanat', hp: 60, speed: 1.4, score: 170, fireRate: 120, missile: 'Uzay_Hedef_Fuze1', color: '#8b5cf6', shape: 'wing' },
+                    { id: 'Uzay_Hedef7', name: 'Neon Denizanası', hp: 50, speed: 1.3, score: 160, fireRate: 130, missile: 'Uzay_Hedef_Fuze1', color: '#c084fc', shape: 'jelly' },
+                    { id: 'Uzay_Hedef8', name: 'Kara Kruvazör', hp: 90, speed: 0.9, score: 230, fireRate: 110, missile: 'Uzay_Hedef_Fuze2', color: '#334155', shape: 'twin' },
+                    { id: 'Uzay_Hedef9', name: 'Kızıl Yıkıcı', hp: 80, speed: 1.0, score: 200, fireRate: 115, missile: 'Uzay_Hedef_Fuze2', color: '#f43f5e', shape: 'pod' },
+                    { id: 'Uzay_Hedef10', name: 'Süpersonik Mızrak', hp: 65, speed: 1.5, score: 190, fireRate: 120, missile: 'Uzay_Hedef_Fuze3', color: '#2563eb', shape: 'spear' },
+                    { id: 'Uzay_Hedef11', name: 'Kalkanlı Küre', hp: 110, speed: 0.8, score: 260, fireRate: 105, missile: 'Uzay_Hedef_Fuze2', color: '#ef4444', shape: 'orb' }
+                ],
+                bosses: [
+                    { id: 'Uzay_Hedef_Boss', name: 'İSTİLA ANA GEMİSİ', hp: 1200, score: 2500, missile: 'Uzay_Hedef_Fuze3', color: '#9333ea' },
+                    { id: 'Uzay_Hedef_Boss2', name: 'KARANLIK DRETNOT', hp: 1450, score: 3000, missile: 'Uzay_Hedef_Fuze2', color: '#e11d48' },
+                    { id: 'Uzay_Hedef_Boss3', name: 'MOR İMPARATOR', hp: 1700, score: 3500, missile: 'Uzay_Hedef_Fuze3', color: '#7e22ce' },
+                    { id: 'Uzay_Hedef_Boss4', name: 'ÇİFT ÇEKİRDEK TİTAN', hp: 1950, score: 4000, missile: 'Uzay_Hedef_Fuze2', color: '#3b82f6' },
+                    { id: 'Uzay_Hedef_Boss5', name: 'KOZMİK KRAKEN BOSS', hp: 2200, score: 4500, missile: 'Uzay_Hedef_Fuze1', color: '#10b981' },
+                    { id: 'Uzay_Hedef_Boss6', name: 'HAYALET ANA GEMİ', hp: 2500, score: 5500, missile: 'Uzay_Hedef_Fuze3', color: '#14b8a6' }
+                ]
+            },
+            dunya: {
+                regular: [
+                    { id: 'Dunya_Hedef1', name: 'Hayalet İHA', hp: 40, speed: 1.3, score: 110, fireRate: 135, missile: 'Dunya_Hedef_Fuze1', color: '#64748b', shape: 'wing' },
+                    { id: 'Dunya_Hedef2', name: 'Taktik F-16', hp: 60, speed: 1.4, score: 150, fireRate: 120, missile: 'Dunya_Hedef_Fuze1', color: '#94a3b8', shape: 'jet' },
+                    { id: 'Dunya_Hedef3', name: 'Çift Motorlu Avcı', hp: 75, speed: 1.2, score: 190, fireRate: 115, missile: 'Dunya_Hedef_Fuze2', color: '#475569', shape: 'jet' },
+                    { id: 'Dunya_Hedef4', name: 'Su-35 Flanker', hp: 85, speed: 1.2, score: 210, fireRate: 110, missile: 'Dunya_Hedef_Fuze2', color: '#38bdf8', shape: 'jet' },
+                    { id: 'Dunya_Hedef5', name: 'Hayalet Bombardıman', hp: 95, speed: 1.0, score: 240, fireRate: 115, missile: 'Dunya_Hedef_Fuze3', color: '#1e293b', shape: 'wing' },
+                    { id: 'Dunya_Hedef6', name: 'Taarruz Jeti', hp: 55, speed: 1.4, score: 140, fireRate: 125, missile: 'Dunya_Hedef_Fuze1', color: '#64748b', shape: 'jet' },
+                    { id: 'Dunya_Hedef7', name: 'Deniz Avcısı', hp: 65, speed: 1.3, score: 170, fireRate: 120, missile: 'Dunya_Hedef_Fuze3', color: '#cbd5e1', shape: 'jet' },
+                    { id: 'Dunya_Hedef8', name: 'Taarruz Helikopteri', hp: 90, speed: 0.9, score: 220, fireRate: 105, missile: 'Dunya_Hedef_Fuze2', color: '#3f6212', shape: 'heli' },
+                    { id: 'Dunya_Hedef9', name: 'Kamikaze Drone', hp: 35, speed: 1.5, score: 120, fireRate: 140, missile: 'Dunya_Hedef_Fuze1', color: '#334155', shape: 'drone' },
+                    { id: 'Dunya_Hedef10', name: 'Silahlı Uydu', hp: 105, speed: 0.8, score: 260, fireRate: 105, missile: 'Dunya_Hedef_Fuze2', color: '#eab308', shape: 'sat' },
+                    { id: 'Dunya_Hedef11', name: 'Taktik SİHA', hp: 50, speed: 1.2, score: 150, fireRate: 120, missile: 'Dunya_Hedef_Fuze3', color: '#94a3b8', shape: 'jet' }
+                ],
+                bosses: [
+                    { id: 'Dunya_Hedef_Boss', name: 'STRATEJİK BOMBARDIMAN', hp: 1200, score: 2500, missile: 'Dunya_Hedef_Fuze2', color: '#475569' },
+                    { id: 'Dunya_Hedef_Boss2', name: 'AĞIR ROKET UÇAĞI', hp: 1450, score: 3000, missile: 'Dunya_Hedef_Fuze2', color: '#334155' },
+                    { id: 'Dunya_Hedef_Boss3', name: 'TİLTROTOR KOMUTA', hp: 1700, score: 3500, missile: 'Dunya_Hedef_Fuze3', color: '#1e293b' },
+                    { id: 'Dunya_Hedef_Boss4', name: 'AWACS HAVA KALESİ', hp: 1950, score: 4000, missile: 'Dunya_Hedef_Fuze2', color: '#64748b' },
+                    { id: 'Dunya_Hedef_Boss5', name: 'SÜPERSONİK VALKYRIE', hp: 2200, score: 4500, missile: 'Dunya_Hedef_Fuze3', color: '#0f172a' },
+                    { id: 'Dunya_Hedef_Boss6', name: 'HAYALET KANAT BOSS', hp: 2500, score: 5500, missile: 'Dunya_Hedef_Fuze2', color: '#1e1b4b' }
+                ]
+            }
+        };
+
+        const BONUS_TYPES = [
+            { id: 'Bonus_Yakıt', name: 'YAKIT VARİLİ', desc: '+45% Yakıt Doldurur', color: '#f59e0b', icon: '⛽' },
+            { id: 'Bonus_Kalkan', name: 'ENERJİ KALKANI', desc: '+70 Dayanıklılık Doldurur', color: '#38bdf8', icon: '🛡️' },
+            { id: 'Bonus_Cephane', name: 'CEPHANE SANDIĞI', desc: 'Kanat Roketlerini & Silahı Güçlendirir', color: '#f97316', icon: '📦' },
+            { id: 'Bonus_Tamir', name: 'TAMİR KİTİ', desc: '+50 Can ve Dayanıklılık Onarımı', color: '#22c55e', icon: '🔧' },
+            { id: 'Bonus_can', name: 'CAN PAKETİ', desc: '+80 Can (HP) Doldurur', color: '#ef4444', icon: '✚' }
+        ];
+
+        /*************************************************************************
+         * 3. FIREBASE KAYIT VE GITHUB GÖRSEL YÜKLEME SİSTEMİ
+         *************************************************************************/
+        const loadedSprites = {};
+        let githubBaseUrl = "";
+        let githubFileExt = ".png";
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'air-combat-arcade-app';
+
+        function updateLoadedAssetCounter() {
+            let count = 0;
+            ALL_66_ASSETS.forEach(name => {
+                if (getSprite(name)) count++;
+            });
+            document.getElementById('loadedAssetCount').innerText = `${count}/${ALL_66_ASSETS.length}`;
+            renderManifestGrid();
+        }
+
+        function getSprite(name) {
+            if (!name) return null;
+            return loadedSprites[name] || loadedSprites[name.toLowerCase()] || null;
+        }
+
+        // Normal GitHub linklerini otomatik olarak Raw GitHub linkine dönüştürür
+        function normalizeGithubUrl(inputUrl) {
+            if (!inputUrl) return "";
+            let url = inputUrl.trim();
+
+            // Eğer kullanıcı örnek bir görsel linki yapıştırdıysa (örn: .../Avcı_Kaan.png), dosya adını kesip klasörü al
+            url = url.replace(/\/[^\/]+\.(png|jpg|jpeg|webp)(\?.*)?$/i, '/');
+
+            // https://github.com/kullanici/repo/tree/main/klasor -> https://raw.githubusercontent.com/kullanici/repo/main/klasor/
+            if (url.includes('github.com') && !url.includes('raw.githubusercontent.com')) {
+                url = url.replace('https://github.com/', 'https://raw.githubusercontent.com/');
+                url = url.replace('/tree/', '/');
+                url = url.replace('/blob/', '/');
+                // Eğer sadece repo kök adresi yazıldıysa (örn: https://github.com/kullanici/repo) sonuna /main/ ekle
+                const parts = url.replace('https://raw.githubusercontent.com/', '').split('/').filter(Boolean);
+                if (parts.length === 2) {
+                    url = `https://raw.githubusercontent.com/${parts[0]}/${parts[1]}/main/`;
+                }
+            }
+
+            if (!url.endsWith('/')) url += '/';
+            return url;
+        }
+
+        // GitHub Base URL üzerinden tüm 66 görseli otomatik çekme (Alternatif uzantı ve Unicode NFC/NFD destekli)
+        function loadAssetsFromGithubUrl(baseUrl, ext) {
+            if (!baseUrl) return;
+            const cleanBase = normalizeGithubUrl(baseUrl);
+            document.getElementById('inputGithubBaseUrl').value = cleanBase;
+
+            ALL_66_ASSETS.forEach(assetName => {
+                const tryLoad = (nameVariant, extVariant, isRetry = false) => {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        loadedSprites[assetName] = img;
+                        loadedSprites[assetName.toLowerCase()] = img;
+                        updateLoadedAssetCounter();
+                        renderMenuPreview();
+                    };
+                    img.onerror = () => {
+                        // İlk deneme başarısızsa alternatif uzantıyı (.png <-> .jpg) veya NFD/NFC Türkçe karakter kodlamasını dene
+                        if (!isRetry) {
+                            const altExt = extVariant === '.png' ? '.jpg' : '.png';
+                            tryLoad(nameVariant.normalize('NFC'), altExt, true);
+                        }
+                    };
+                    img.src = cleanBase + encodeURIComponent(nameVariant.normalize('NFC')) + extVariant;
+                };
+
+                tryLoad(assetName, ext, false);
+            });
+        }
+
+        // Yerel Klasörden Seçilen Görselleri Yükleme
+        document.getElementById('localSpriteUploader').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            Array.from(files).forEach(file => {
+                const cleanName = file.name.replace(/\.[^/.]+$/, "");
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        loadedSprites[cleanName] = img;
+                        loadedSprites[cleanName.toLowerCase()] = img;
+                        updateLoadedAssetCounter();
+                        renderMenuPreview();
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // Firebase Başlatma ve Görsel Şemasını Kaydetme
+        async function initFirebase() {
+            const statusDot = document.getElementById('cloudStatusDot');
+            const statusText = document.getElementById('cloudStatusText');
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    statusText.innerText = "Yerel Mod Aktif";
+                    return;
+                }
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, async (user) => {
+                    currentUser = user;
+                    if (user) {
+                        statusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                        statusText.innerText = "Firebase Kayıtlı";
+                        await syncAssetSchemaWithFirebase();
+                    }
+                });
+            } catch (err) {
+                statusDot.className = "w-2 h-2 rounded-full bg-rose-400";
+                statusText.innerText = "Çevrimdışı Mod";
+            }
+        }
+
+        async function syncAssetSchemaWithFirebase() {
+            if (!db || !currentUser) return;
+            try {
+                const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameAssetConfig', 'manifestDoc');
+                const snap = await getDoc(configRef);
+
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.githubBaseUrl) {
+                        githubBaseUrl = data.githubBaseUrl;
+                        document.getElementById('inputGithubBaseUrl').value = githubBaseUrl;
+                    }
+                    if (data.fileExtension) {
+                        githubFileExt = data.fileExtension;
+                        document.getElementById('selectFileExt').value = githubFileExt;
+                    }
+                    if (githubBaseUrl) {
+                        loadAssetsFromGithubUrl(githubBaseUrl, githubFileExt);
+                    }
+                } else {
+                    // İlk çalışmada 66 görsel ismini Firebase'e otomatik kaydet
+                    await setDoc(configRef, {
+                        githubBaseUrl: "",
+                        fileExtension: ".png",
+                        totalAssets: ALL_66_ASSETS.length,
+                        assetNames: ALL_66_ASSETS,
+                        categories: EXACT_ASSET_NAMES,
+                        updatedAt: Date.now()
+                    });
+                }
+            } catch (e) {
+                console.warn("Firebase senkronizasyon uyarısı:", e);
+            }
+        }
+
+        async function saveConfigToFirebase() {
+            const rawInput = document.getElementById('inputGithubBaseUrl').value.trim();
+            const baseUrl = normalizeGithubUrl(rawInput);
+            const ext = document.getElementById('selectFileExt').value;
+            document.getElementById('inputGithubBaseUrl').value = baseUrl;
+            githubBaseUrl = baseUrl;
+            githubFileExt = ext;
+
+            if (baseUrl) {
+                loadAssetsFromGithubUrl(baseUrl, ext);
+            }
+
+            const feedback = document.getElementById('firebaseSaveFeedback');
+            feedback.classList.remove('hidden');
+
+            if (db && currentUser) {
+                try {
+                    const configRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameAssetConfig', 'manifestDoc');
+                    await setDoc(configRef, {
+                        githubBaseUrl: baseUrl,
+                        fileExtension: ext,
+                        totalAssets: ALL_66_ASSETS.length,
+                        assetNames: ALL_66_ASSETS,
+                        categories: EXACT_ASSET_NAMES,
+                        updatedAt: Date.now()
+                    });
+                    feedback.innerText = `✅ Tüm 66 görsel ismi ve dönüştürülen GitHub Raw adresiniz (${baseUrl}) Firebase'e kaydedildi! Görseller çekiliyor...`;
+                } catch (e) {
+                    feedback.innerText = `⚠️ Görsel ayarları aktif edildi (Bulut yazma hatası: ${e.message})`;
+                }
+            } else {
+                feedback.innerText = `✅ GitHub URL (${baseUrl}) ve 66 görsel şeması uygulandı! Görseller yükleniyor...`;
+            }
+        }
+
+        function renderManifestGrid() {
+            const grid = document.getElementById('assetManifestGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            ALL_66_ASSETS.forEach(name => {
+                const isLoaded = !!getSprite(name);
+                const item = document.createElement('div');
+                item.className = `px-2.5 py-1.5 rounded border flex items-center justify-between ${
+                    isLoaded ? 'bg-emerald-950/60 border-emerald-500/50 text-emerald-200' : 'bg-slate-900 border-slate-800 text-slate-300'
+                }`;
+                item.innerHTML = `
+                    <span class="truncate">${name}${githubFileExt}</span>
+                    <span class="text-[10px] ml-1">${isLoaded ? '✅' : '⏳'}</span>
+                `;
+                grid.appendChild(item);
+            });
+        }
+
+        /*************************************************************************
+         * 4. SES EFEKTLERİ (Web Audio API)
+         *************************************************************************/
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'gun') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(380, now);
+                    osc.frequency.exponentialRampToValueAtTime(95, now + 0.055);
+                    gain.gain.setValueAtTime(0.07, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.055);
+                    osc.start(now);
+                    osc.stop(now + 0.055);
+                } else if (type === 'missile') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.exponentialRampToValueAtTime(580, now + 0.22);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'explosion') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.exponentialRampToValueAtTime(28, now + 0.28);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.28);
+                    osc.start(now);
+                    osc.stop(now + 0.28);
+                } else if (type === 'bonus') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(480, now);
+                    osc.frequency.setValueAtTime(720, now + 0.08);
+                    osc.frequency.setValueAtTime(960, now + 0.16);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.24);
+                    osc.start(now);
+                    osc.stop(now + 0.24);
+                }
+            } catch (e) {}
+        }
+
+        /*************************************************************************
+         * 5. GÖRSEL VEKTÖR & SPRITE ÇİZİM FONKSİYONLARI
+         *************************************************************************/
+        function drawFighterSpriteOrVector(ctx, plane, x, y, w, h, tiltX = 0, tiltY = 0) {
+            const customImg = getSprite(plane.id);
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(tiltX * 0.18);
+            ctx.scale(1, 1 - tiltY * 0.08);
+
+            if (customImg) {
+                ctx.drawImage(customImg, -w / 2, -h / 2, w, h);
+                ctx.restore();
+                return;
+            }
+
+            // Çift Motor Afterburner Alevi (Arkadan / Üstten Perspektif)
+            const flame = 12 + Math.random() * 10;
+            const grad = ctx.createLinearGradient(0, h * 0.3, 0, h * 0.3 + flame);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.5, '#38bdf8');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(-w * 0.1, h * 0.36, 6, 0, Math.PI * 2);
+            ctx.arc(w * 0.1, h * 0.36, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Gövde Çizimi
+            ctx.fillStyle = plane.color;
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (plane.wingType === 'flyingWing') {
+                ctx.moveTo(0, -h * 0.42);
+                ctx.lineTo(w * 0.5, h * 0.15);
+                ctx.lineTo(w * 0.3, h * 0.35);
+                ctx.lineTo(0, h * 0.22);
+                ctx.lineTo(-w * 0.3, h * 0.35);
+                ctx.lineTo(-w * 0.5, h * 0.15);
+                ctx.closePath();
+            } else {
+                ctx.moveTo(0, -h * 0.48);
+                ctx.lineTo(w * 0.15, -h * 0.15);
+                ctx.lineTo(w * 0.48, h * 0.16);
+                ctx.lineTo(w * 0.36, h * 0.30);
+                ctx.lineTo(w * 0.16, h * 0.25);
+                ctx.lineTo(w * 0.22, h * 0.44);
+                ctx.lineTo(0, h * 0.38);
+                ctx.lineTo(-w * 0.22, h * 0.44);
+                ctx.lineTo(-w * 0.16, h * 0.25);
+                ctx.lineTo(-w * 0.36, h * 0.30);
+                ctx.lineTo(-w * 0.48, h * 0.16);
+                ctx.lineTo(-w * 0.15, -h * 0.15);
+                ctx.closePath();
+            }
+            ctx.fill();
+            ctx.stroke();
+
+            // Kokpit Camı
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.ellipse(0, -h * 0.12, w * 0.08, h * 0.16, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawTargetSpriteOrVector(ctx, target, drawX, drawY, drawW, drawH) {
+            const customImg = getSprite(target.id);
+            ctx.save();
+            ctx.translate(drawX, drawY);
+
+            if (customImg) {
+                ctx.drawImage(customImg, -drawW / 2, -drawH / 2, drawW, drawH);
+            } else {
+                ctx.fillStyle = target.color || '#ef4444';
+                ctx.strokeStyle = target.isBoss ? '#fde047' : '#e2e8f0';
+                ctx.lineWidth = target.isBoss ? 2.5 : 1.3;
+
+                ctx.beginPath();
+                if (target.shape === 'jelly') {
+                    ctx.arc(0, -drawH * 0.1, drawW * 0.38, Math.PI, 0, false);
+                    ctx.lineTo(drawW * 0.3, drawH * 0.2);
+                    ctx.lineTo(-drawW * 0.3, drawH * 0.2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                } else if (target.shape === 'heli') {
+                    ctx.ellipse(0, 0, drawW * 0.25, drawH * 0.4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.beginPath();
+                    ctx.moveTo(-drawW * 0.48, 0);
+                    ctx.lineTo(drawW * 0.48, 0);
+                    ctx.stroke();
+                } else {
+                    ctx.moveTo(0, drawH * 0.46);
+                    ctx.lineTo(drawW * 0.2, drawH * 0.12);
+                    ctx.lineTo(drawW * 0.48, -drawH * 0.1);
+                    ctx.lineTo(drawW * 0.3, -drawH * 0.36);
+                    ctx.lineTo(0, -drawH * 0.24);
+                    ctx.lineTo(-drawW * 0.3, -drawH * 0.36);
+                    ctx.lineTo(-drawW * 0.48, -drawH * 0.1);
+                    ctx.lineTo(-drawW * 0.2, drawH * 0.12);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+
+            // Hedef Can Barı ve İsim Etiketi
+            if (!target.isBoss) {
+                const bw = Math.max(40, drawW * 0.85);
+                ctx.fillStyle = 'rgba(0,0,0,0.75)';
+                ctx.fillRect(-bw / 2, -drawH / 2 - 10, bw, 5);
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(-bw / 2, -drawH / 2 - 10, bw * Math.max(0, target.hp / target.maxHp), 5);
+            }
+
+            ctx.restore();
+        }
+
+        /*************************************************************************
+         * 6. MENÜ ARAYÜZÜ OLUŞTURMA
+         *************************************************************************/
+        let selectedPlane = FIGHTER_PLANES[0];
+        let selectedMap = GAME_MAPS[3]; // Dunya_Okyanus
+
+        function initMenuUI() {
+            const planeGrid = document.getElementById('planeGrid');
+            planeGrid.innerHTML = '';
+
+            FIGHTER_PLANES.forEach(plane => {
+                const isSelected = plane.id === selectedPlane.id;
+                const card = document.createElement('div');
+                card.className = `cursor-pointer rounded-lg p-2 border transition flex flex-col items-center text-center ${
+                    isSelected ? 'bg-cyan-950/80 border-cyan-400 neon-border' : 'bg-slate-950/60 border-slate-800 hover:border-slate-600'
+                }`;
+                card.innerHTML = `
+                    <div class="w-12 h-12 flex items-center justify-center mb-1">
+                        <canvas id="thumb_${plane.id}" width="48" height="48"></canvas>
+                    </div>
+                    <div class="font-orbitron text-[11px] font-bold text-white truncate w-full">${plane.name}</div>
+                    <div class="text-[9px] text-cyan-400 font-mono">${plane.id}</div>
+                `;
+                card.onclick = () => {
+                    selectedPlane = plane;
+                    initMenuUI();
+                };
+                planeGrid.appendChild(card);
+
+                setTimeout(() => {
+                    const c = document.getElementById(`thumb_${plane.id}`);
+                    if (c) {
+                        const tctx = c.getContext('2d');
+                        tctx.clearRect(0, 0, 48, 48);
+                        drawFighterSpriteOrVector(tctx, plane, 24, 24, 38, 38);
+                    }
+                }, 0);
+            });
+
+            const mapGrid = document.getElementById('mapGrid');
+            mapGrid.innerHTML = '';
+
+            GAME_MAPS.forEach(map => {
+                const isSelected = map.id === selectedMap.id;
+                const isIstila = map.type === 'istila';
+                const card = document.createElement('div');
+                card.className = `cursor-pointer rounded-lg p-2.5 border transition flex flex-col justify-between ${
+                    isSelected 
+                        ? (isIstila ? 'bg-rose-950/70 border-rose-500 neon-border-red' : 'bg-cyan-950/70 border-cyan-400 neon-border') 
+                        : 'bg-slate-950/70 border-slate-800 hover:border-slate-600'
+                }`;
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[9px] font-orbitron font-bold px-1.5 py-0.5 rounded ${
+                                isIstila ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                            }">${isIstila ? 'UZAY İSTİLASI' : 'DÜNYA HARİTASI'}</span>
+                            <span class="text-[9px] font-mono text-slate-400">${map.id}</span>
+                        </div>
+                        <div class="font-orbitron text-xs font-bold text-white">${map.title}</div>
+                        <p class="text-[11px] text-slate-400 mt-0.5 leading-tight">${map.desc}</p>
+                    </div>
+                    <div class="mt-2 h-2 w-full rounded" style="background: linear-gradient(to right, ${map.skyTop}, ${map.skyHorizon}, ${map.groundColor})"></div>
+                `;
+                card.onclick = () => {
+                    selectedMap = map;
+                    document.getElementById('selectedMapBadge').innerText = map.id;
+                    initMenuUI();
+                };
+                mapGrid.appendChild(card);
+            });
+
+            renderMenuPreview();
+        }
+
+        function renderMenuPreview() {
+            document.getElementById('selectedPlaneBadge').innerText = selectedPlane.id;
+            document.getElementById('previewSpriteName').innerText = selectedPlane.id;
+            document.getElementById('planeTitle').innerText = selectedPlane.name;
+            document.getElementById('planeRole').innerText = selectedPlane.role;
+
+            document.getElementById('statHp').style.width = `${(selectedPlane.hp / 280) * 100}%`;
+            document.getElementById('valHp').innerText = selectedPlane.hp;
+
+            document.getElementById('statArmor').style.width = `${(selectedPlane.armor / 240) * 100}%`;
+            document.getElementById('valArmor').innerText = selectedPlane.armor;
+
+            document.getElementById('statDamage').style.width = `${(selectedPlane.damage / 120) * 100}%`;
+            document.getElementById('valDamage').innerText = selectedPlane.damage;
+
+            document.getElementById('statSpeed').style.width = `${(selectedPlane.speed / 10) * 100}%`;
+            document.getElementById('valSpeed').innerText = selectedPlane.speed;
+
+            document.getElementById('statFuel').style.width = `${(selectedPlane.fuel / 180) * 100}%`;
+            document.getElementById('valFuel').innerText = `${selectedPlane.fuel}s`;
+
+            const pCanvas = document.getElementById('previewPlaneCanvas');
+            if (pCanvas) {
+                const pCtx = pCanvas.getContext('2d');
+                pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+                drawFighterSpriteOrVector(pCtx, selectedPlane, 55, 55, 84, 84);
+            }
+        }
+
+        /*************************************************************************
+         * 7. ARCADE NERF TARZI HAREKETLİ UÇAK-SİLAH & NİŞANGAH OYUN MOTORU
+         *************************************************************************/
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameState = 'MENU';
+        let keys = {};
+        let crosshair = { x: 0, y: 0, firing: false };
+
+        let player = null;
+        let bullets = [];          // Oyuncu uçağından nişangaha doğru giden mermiler
+        let wingMissiles = [];     // Sağ ve sol kanattan çıkan Avcı_Füze_Sag / Avcı_Füze_Sol roketler
+        let targets = [];          // Karşıda (ufukta/havada) hareket eden hedefler
+        let incomingMissiles = []; // Hedeflerden oyuncuya doğru büyüyerek gelen füzeler
+        let bonuses = [];          // Ekranda beliren / vurularak veya üstüne gidilerek alınan bonuslar
+        let particles = [];
+        let floatingTexts = [];
+        let perspectiveGridOffset = 0;
+
+        let score = 0;
+        let kills = 0;
+        let waveNumber = 1;
+        let waveKillsNeeded = 12;
+        let currentWaveKills = 0;
+        let activeBoss = null;
+        let spawnTimer = 0;
+        let bonusTimer = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight - 56;
+            if (crosshair.x === 0 && crosshair.y === 0) {
+                crosshair.x = canvas.width / 2;
+                crosshair.y = canvas.height * 0.42;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function startGame() {
+            gameState = 'PLAYING';
+            canvas.classList.add('arcade-crosshair');
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            document.getElementById('hudScreen').classList.remove('hidden');
+            document.getElementById('btnBackToMenu').classList.remove('hidden');
+
+            crosshair.x = canvas.width / 2;
+            crosshair.y = canvas.height * 0.42;
+
+            // Oyuncunun Uçağı (Arcade Nerf silahı gibi nişangahı takip ederek yukarı/aşağı/sağa/sola hareket eder)
+            player = {
+                plane: selectedPlane,
+                x: canvas.width / 2,
+                y: canvas.height - 125,
+                w: 118,
+                h: 118,
+                hp: selectedPlane.hp,
+                maxHp: selectedPlane.hp,
+                shield: selectedPlane.armor,
+                maxShield: selectedPlane.armor,
+                fuel: selectedPlane.fuel,
+                maxFuel: selectedPlane.fuel,
+                speed: selectedPlane.speed,
+                damage: selectedPlane.damage,
+                weaponLevel: 1,
+                gunCooldown: 0,
+                leftMissiles: 4,
+                maxLeftMissiles: 4,
+                leftRecharge: 0,
+                rightMissiles: 4,
+                maxRightMissiles: 4,
+                rightRecharge: 0,
+                tiltX: 0,
+                tiltY: 0
+            };
+
+            bullets = [];
+            wingMissiles = [];
+            targets = [];
+            incomingMissiles = [];
+            bonuses = [];
+            particles = [];
+            floatingTexts = [];
+
+            score = 0;
+            kills = 0;
+            waveNumber = 1;
+            waveKillsNeeded = 12;
+            currentWaveKills = 0;
+            activeBoss = null;
+            spawnTimer = 0;
+            bonusTimer = 0;
+
+            document.getElementById('hudPlaneName').innerText = selectedPlane.id;
+            document.getElementById('hudMapType').innerText = selectedMap.id;
+            document.getElementById('bossHudContainer').classList.add('hidden');
+            updateHUD();
+        }
+
+        function stopToMenu() {
+            gameState = 'MENU';
+            canvas.classList.remove('arcade-crosshair');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('hudScreen').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            document.getElementById('btnBackToMenu').classList.add('hidden');
+            initMenuUI();
+        }
+
+        function triggerGameOver(reason) {
+            gameState = 'GAMEOVER';
+            canvas.classList.remove('arcade-crosshair');
+            document.getElementById('gameOverModal').classList.remove('hidden');
+            document.getElementById('modalReason').innerText = reason;
+            document.getElementById('modalScore').innerText = score;
+            document.getElementById('modalKills').innerText = kills;
+        }
+
+        // Sağ ve Sol Kanat Roketlerini Ateşleme (Avcı_Füze_Sol ve Avcı_Füze_Sag)
+        function fireWingMissile(side) {
+            if (gameState !== 'PLAYING' || !player) return;
+
+            // Nişangaha en yakın hedefi kilitle
+            let lockedTarget = null;
+            let minDist = Infinity;
+            targets.forEach(t => {
+                const d = Math.hypot(t.x - crosshair.x, t.y - crosshair.y);
+                if (d < minDist) {
+                    minDist = d;
+                    lockedTarget = t;
+                }
+            });
+
+            if (side === 'left' && player.leftMissiles > 0) {
+                player.leftMissiles--;
+                wingMissiles.push({
+                    spriteName: 'Avcı_Füze_Sol',
+                    x: player.x - 42,
+                    y: player.y - 10,
+                    targetX: lockedTarget ? lockedTarget.x : crosshair.x,
+                    targetY: lockedTarget ? lockedTarget.y : crosshair.y,
+                    lockedTarget: lockedTarget,
+                    progress: 0,
+                    damage: player.damage * 1.6
+                });
+                playSound('missile');
+            } else if (side === 'right' && player.rightMissiles > 0) {
+                player.rightMissiles--;
+                wingMissiles.push({
+                    spriteName: 'Avcı_Füze_Sag',
+                    x: player.x + 42,
+                    y: player.y - 10,
+                    targetX: lockedTarget ? lockedTarget.x : crosshair.x,
+                    targetY: lockedTarget ? lockedTarget.y : crosshair.y,
+                    lockedTarget: lockedTarget,
+                    progress: 0,
+                    damage: player.damage * 1.6
+                });
+                playSound('missile');
+            }
+            updateHUD();
+        }
+
+        // Hedef Üretimi (Karşıda derinlikli olarak hareket eden düşman hedefleri)
+        function spawnTarget() {
+            const pool = ENEMY_POOLS[selectedMap.type].regular;
+            const tpl = pool[Math.floor(Math.random() * pool.length)];
+            const hpScale = 1 + (waveNumber - 1) * 0.18;
+
+            targets.push({
+                id: tpl.id,
+                name: tpl.name,
+                x: 100 + Math.random() * (canvas.width - 200),
+                y: 110 + Math.random() * (canvas.height * 0.42),
+                vx: (Math.random() < 0.5 ? -1 : 1) * (1.5 + tpl.speed),
+                vy: (Math.random() - 0.5) * 1.2,
+                baseW: 78,
+                baseH: 78,
+                scale: 0.75 + Math.random() * 0.35,
+                hp: Math.round(tpl.hp * hpScale),
+                maxHp: Math.round(tpl.hp * hpScale),
+                score: tpl.score,
+                fireCooldown: 70 + Math.random() * tpl.fireRate,
+                fireRate: tpl.fireRate,
+                missileId: tpl.missile,
+                color: tpl.color,
+                shape: tpl.shape,
+                isBoss: false
+            });
+        }
+
+        function spawnBoss() {
+            const bossPool = ENEMY_POOLS[selectedMap.type].bosses;
+            const tpl = bossPool[(waveNumber - 1) % bossPool.length];
+            const hpScale = 1 + (waveNumber - 1) * 0.25;
+
+            activeBoss = {
+                id: tpl.id,
+                name: tpl.name,
+                x: canvas.width / 2,
+                y: 165,
+                vx: 2.2,
+                vy: 0.6,
+                baseW: 190,
+                baseH: 145,
+                scale: 1,
+                hp: Math.round(tpl.hp * hpScale),
+                maxHp: Math.round(tpl.hp * hpScale),
+                score: tpl.score,
+                fireCooldown: 65,
+                fireRate: 65,
+                missileId: tpl.missile,
+                color: tpl.color,
+                shape: 'boss',
+                isBoss: true
+            };
+            targets.push(activeBoss);
+
+            document.getElementById('bossHudContainer').classList.remove('hidden');
+            document.getElementById('bossHudName').innerText = `⚠ BOSS: ${tpl.id}`;
+        }
+
+        function spawnBonus(x, y) {
+            const tpl = BONUS_TYPES[Math.floor(Math.random() * BONUS_TYPES.length)];
+            bonuses.push({
+                id: tpl.id,
+                name: tpl.name,
+                color: tpl.color,
+                icon: tpl.icon,
+                x: x || (120 + Math.random() * (canvas.width - 240)),
+                y: y || (140 + Math.random() * (canvas.height * 0.45)),
+                vy: 1.1,
+                r: 28
+            });
+        }
+
+        function createExplosion(x, y, color, count = 18) {
+            for (let i = 0; i < count; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const spd = 1.5 + Math.random() * 5.5;
+                particles.push({
+                    x, y,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd,
+                    r: 2.5 + Math.random() * 4.5,
+                    color: color || '#f59e0b',
+                    alpha: 1
+                });
+            }
+        }
+
+        function addFloatingText(x, y, text, color = '#38bdf8') {
+            floatingTexts.push({ x, y, text, color, alpha: 1, vy: -1.4 });
+        }
+
+        function updateHUD() {
+            if (!player) return;
+            document.getElementById('hudHpText').innerText = `${Math.max(0, Math.round(player.hp))} / ${player.maxHp}`;
+            document.getElementById('hudHpBar').style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
+
+            document.getElementById('hudShieldText').innerText = `${Math.max(0, Math.round(player.shield))} / ${player.maxShield}`;
+            document.getElementById('hudShieldBar').style.width = `${Math.max(0, (player.shield / player.maxShield) * 100)}%`;
+
+            const fuelPct = Math.max(0, Math.round((player.fuel / player.maxFuel) * 100));
+            document.getElementById('hudFuelText').innerText = `${fuelPct}%`;
+            document.getElementById('hudFuelBar').style.width = `${fuelPct}%`;
+
+            document.getElementById('hudScore').innerText = String(score).padStart(6, '0');
+            document.getElementById('hudWaveInfo').innerText = activeBoss
+                ? `DALGA ${waveNumber} - BOSS SAVAŞI!`
+                : `DALGA ${waveNumber} (${currentWaveKills}/${waveKillsNeeded} HEDEF)`;
+            document.getElementById('hudWeaponLevel').innerText = `GÜÇ SV.${player.weaponLevel}`;
+
+            document.getElementById('leftMissileCount').innerText = `${player.leftMissiles}/${player.maxLeftMissiles}`;
+            const leftPct = player.leftMissiles === player.maxLeftMissiles ? 100 : (player.leftRecharge / 140) * 100;
+            document.getElementById('leftMissileBar').style.width = `${leftPct}%`;
+
+            document.getElementById('rightMissileCount').innerText = `${player.rightMissiles}/${player.maxRightMissiles}`;
+            const rightPct = player.rightMissiles === player.maxRightMissiles ? 100 : (player.rightRecharge / 140) * 100;
+            document.getElementById('rightMissileBar').style.width = `${rightPct}%`;
+
+            if (activeBoss) {
+                document.getElementById('bossHudHpText').innerText = `${Math.max(0, Math.round(activeBoss.hp))} HP`;
+                document.getElementById('bossHudBar').style.width = `${Math.max(0, (activeBoss.hp / activeBoss.maxHp) * 100)}%`;
+            }
+        }
+
+        function updateGame() {
+            if (gameState !== 'PLAYING' || !player) return;
+
+            // 1. Klavye ile Nişangah ve Uçak Hareketi (WASD / Ok Tuşları) + Fare Takibi
+            const moveStep = player.speed * 1.15;
+            if (keys['ArrowLeft'] || keys['KeyA']) crosshair.x -= moveStep;
+            if (keys['ArrowRight'] || keys['KeyD']) crosshair.x += moveStep;
+            if (keys['ArrowUp'] || keys['KeyW']) crosshair.y -= moveStep;
+            if (keys['ArrowDown'] || keys['KeyS']) crosshair.y += moveStep;
+
+            // Harita Sınırları
+            crosshair.x = Math.max(50, Math.min(canvas.width - 50, crosshair.x));
+            crosshair.y = Math.max(70, Math.min(canvas.height - 90, crosshair.y));
+
+            // Arcade Nerf Silahı gibi Oyuncu Uçağı da Nişangahla Birlikte Yukarı/Aşağı/Sağa/Sola Hareket Eder
+            const desiredPlayerX = crosshair.x;
+            const desiredPlayerY = Math.max(canvas.height * 0.45, Math.min(canvas.height - 75, crosshair.y + 150));
+
+            const diffX = desiredPlayerX - player.x;
+            const diffY = desiredPlayerY - player.y;
+            player.x += diffX * 0.18;
+            player.y += diffY * 0.18;
+            player.tiltX = Math.max(-1, Math.min(1, diffX * 0.025));
+            player.tiltY = Math.max(-1, Math.min(1, diffY * 0.02));
+
+            // 2. Yakıt Tüketimi
+            player.fuel -= 1 / 60;
+            if (player.fuel <= 0) {
+                player.fuel = 0;
+                triggerGameOver('Yakıtınız tamamen tükendi! Bonus_Yakıt varillerini vurarak veya toplayarak yakıt doldurun.');
+                return;
+            }
+
+            // 3. Sağ ve Sol Kanat Roketlerinin Zamanla Dolması
+            if (player.leftMissiles < player.maxLeftMissiles) {
+                player.leftRecharge++;
+                if (player.leftRecharge >= 140) {
+                    player.leftMissiles++;
+                    player.leftRecharge = 0;
+                }
+            }
+            if (player.rightMissiles < player.maxRightMissiles) {
+                player.rightRecharge++;
+                if (player.rightRecharge >= 140) {
+                    player.rightMissiles++;
+                    player.rightRecharge = 0;
+                }
+            }
+
+            // 4. Sonsuz Mermili Ana Makineli Tüfek (Uçağın Namlularından Nişangaha Doğru Ateş)
+            if (player.gunCooldown > 0) player.gunCooldown--;
+            if ((crosshair.firing || keys['Space']) && player.gunCooldown <= 0) {
+                const dmg = player.damage * (0.24 + (player.weaponLevel - 1) * 0.07);
+                bullets.push({
+                    startX: player.x - 22,
+                    startY: player.y - 25,
+                    x: player.x - 22,
+                    y: player.y - 25,
+                    targetX: crosshair.x + (Math.random() - 0.5) * 14,
+                    targetY: crosshair.y + (Math.random() - 0.5) * 14,
+                    progress: 0,
+                    dmg
+                });
+                bullets.push({
+                    startX: player.x + 22,
+                    startY: player.y - 25,
+                    x: player.x + 22,
+                    y: player.y - 25,
+                    targetX: crosshair.x + (Math.random() - 0.5) * 14,
+                    targetY: crosshair.y + (Math.random() - 0.5) * 14,
+                    progress: 0,
+                    dmg
+                });
+                player.gunCooldown = 6;
+                playSound('gun');
+            }
+
+            // 5. Ana Makineli Mermilerini Güncelle (Nişangaha ulaştığında hedef veya gelen füze/bonus vurur)
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.progress += 0.16;
+                b.x = b.startX + (b.targetX - b.startX) * b.progress;
+                b.y = b.startY + (b.targetY - b.startY) * b.progress;
+
+                if (b.progress >= 1) {
+                    checkPointHit(b.targetX, b.targetY, b.dmg, false);
+                    bullets.splice(i, 1);
+                }
+            }
+
+            // 6. Sağ ve Sol Kanat Roketlerini Güncelle
+            for (let i = wingMissiles.length - 1; i >= 0; i--) {
+                const m = wingMissiles[i];
+                if (m.lockedTarget && targets.includes(m.lockedTarget)) {
+                    m.targetX = m.lockedTarget.x;
+                    m.targetY = m.lockedTarget.y;
+                }
+                m.progress += 0.055;
+                m.x += (m.targetX - m.x) * 0.18;
+                m.y += (m.targetY - m.y) * 0.18;
+
+                if (m.progress >= 1 || Math.hypot(m.targetX - m.x, m.targetY - m.y) < 24) {
+                    checkPointHit(m.targetX, m.targetY, m.damage, true);
+                    createExplosion(m.targetX, m.targetY, '#f59e0b', 22);
+                    playSound('explosion');
+                    wingMissiles.splice(i, 1);
+                }
+            }
+
+            // 7. Hedef ve Boss Üretimi
+            spawnTimer++;
+            if (!activeBoss && currentWaveKills >= waveKillsNeeded) {
+                spawnBoss();
+            } else if (!activeBoss && targets.length < 6 && spawnTimer >= Math.max(40, 85 - waveNumber * 5)) {
+                spawnTarget();
+                spawnTimer = 0;
+            }
+
+            // Rastgele Bonus Üretimi
+            bonusTimer++;
+            if (bonusTimer >= 320) {
+                spawnBonus();
+                bonusTimer = 0;
+            }
+
+            // 8. Karşıdaki Düşman Hedeflerini Güncelle ve Oyuncuya Doğru Füze Attır
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                t.x += t.vx;
+                t.y += t.vy;
+
+                if (t.x < 90 || t.x > canvas.width - 90) t.vx *= -1;
+                if (t.y < 95 || t.y > canvas.height * 0.55) t.vy *= -1;
+
+                t.fireCooldown--;
+                if (t.fireCooldown <= 0) {
+                    // Hedeften oyuncunun o anki uçak konumuna doğru büyüyerek gelen füze atılır
+                    const count = t.isBoss ? 2 : 1;
+                    for (let c = 0; c < count; c++) {
+                        incomingMissiles.push({
+                            spriteName: t.missileId,
+                            startX: t.x + (c === 0 ? -20 : 20),
+                            startY: t.y,
+                            x: t.x,
+                            y: t.y,
+                            aimX: player.x + (Math.random() - 0.5) * 40,
+                            aimY: player.y + (Math.random() - 0.5) * 30,
+                            z: 0.08, // Uzaktan (0.08) başlayıp oyuncuya (1.0) doğru büyür
+                            speedZ: 0.0085 + Math.random() * 0.003,
+                            hp: 15,
+                            damage: t.isBoss ? 26 : 18
+                        });
+                    }
+                    t.fireCooldown = t.fireRate;
+                }
+            }
+
+            // 9. Hedeflerden Bize Doğru Gelen Füzeleri Güncelle (Vurulabilir veya Kaçınılabilir)
+            for (let i = incomingMissiles.length - 1; i >= 0; i--) {
+                const im = incomingMissiles[i];
+                im.z += im.speedZ;
+                im.x = im.startX + (im.aimX - im.startX) * im.z;
+                im.y = im.startY + (im.aimY - im.startY) * im.z;
+
+                // Füze oyuncunun uçağının bulunduğu derinliğe (z >= 1) ulaştığında:
+                if (im.z >= 1) {
+                    // Oyuncu uçağını hareket ettirip kaçındı mı kontrol et
+                    const distToPlane = Math.hypot(im.x - player.x, im.y - player.y);
+                    if (distToPlane < 68) {
+                        applyDamageToPlayer(im.damage);
+                        createExplosion(im.x, im.y, '#ef4444', 18);
+                        playSound('explosion');
+                    } else {
+                        addFloatingText(im.x, im.y, 'KAÇINILDI!', '#38bdf8');
+                    }
+                    incomingMissiles.splice(i, 1);
+                }
+            }
+
+            // 10. Bonusları Güncelle (Hem nişangahla vurarak hem de uçakla üzerine giderek alınabilir)
+            for (let i = bonuses.length - 1; i >= 0; i--) {
+                const b = bonuses[i];
+                b.y += b.vy;
+
+                if (Math.hypot(b.x - player.x, b.y - player.y) < b.r + 52) {
+                    collectBonus(b);
+                    bonuses.splice(i, 1);
+                    continue;
+                }
+                if (b.y > canvas.height + 40) {
+                    bonuses.splice(i, 1);
+                }
+            }
+
+            // Parçacık ve Yazılar
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.03;
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy;
+                ft.alpha -= 0.022;
+                if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+            }
+
+            updateHUD();
+        }
+
+        // Nişangah Noktasındaki Hedefleri, Gelen Füzeleri ve Bonusları Vurma Kontrolü
+        function checkPointHit(hx, hy, dmg, isAreaMissile) {
+            const hitRadiusBonus = isAreaMissile ? 65 : 22;
+
+            // 1. Önce bize doğru gelen füzeleri havada vurduk mu?
+            for (let i = incomingMissiles.length - 1; i >= 0; i--) {
+                const im = incomingMissiles[i];
+                const radius = 16 + im.z * 26 + hitRadiusBonus;
+                if (Math.hypot(hx - im.x, hy - im.y) <= radius) {
+                    im.hp -= dmg;
+                    createExplosion(im.x, im.y, '#f97316', 5);
+                    if (im.hp <= 0) {
+                        score += 35;
+                        createExplosion(im.x, im.y, '#f59e0b', 12);
+                        addFloatingText(im.x, im.y, 'FÜZE İMHA!', '#fbbf24');
+                        incomingMissiles.splice(i, 1);
+                    }
+                    if (!isAreaMissile) return;
+                }
+            }
+
+            // 2. Bonus sandıklarını vurarak toplama (Arcade Nerf tarzı)
+            for (let i = bonuses.length - 1; i >= 0; i--) {
+                const b = bonuses[i];
+                if (Math.hypot(hx - b.x, hy - b.y) <= b.r + hitRadiusBonus) {
+                    collectBonus(b);
+                    bonuses.splice(i, 1);
+                    if (!isAreaMissile) return;
+                }
+            }
+
+            // 3. Düşman Hedeflerini Vurma
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                const w = t.baseW * t.scale + hitRadiusBonus;
+                const h = t.baseH * t.scale + hitRadiusBonus;
+
+                if (Math.abs(hx - t.x) <= w * 0.5 && Math.abs(hy - t.y) <= h * 0.5) {
+                    t.hp -= dmg;
+                    createExplosion(hx, hy, '#38bdf8', 4);
+
+                    if (t.hp <= 0) {
+                        score += t.score;
+                        kills++;
+                        currentWaveKills++;
+                        createExplosion(t.x, t.y, t.color, t.isBoss ? 45 : 20);
+                        playSound('explosion');
+
+                        if (t.isBoss || Math.random() < 0.32) {
+                            spawnBonus(t.x, t.y);
+                        }
+
+                        if (t.isBoss) {
+                            activeBoss = null;
+                            document.getElementById('bossHudContainer').classList.add('hidden');
+                            waveNumber++;
+                            currentWaveKills = 0;
+                            waveKillsNeeded += 5;
+                            addFloatingText(canvas.width / 2, canvas.height * 0.35, `DALGA ${waveNumber} BAŞLADI!`, '#fbbf24');
+                        }
+                        targets.splice(i, 1);
+                    }
+                    if (!isAreaMissile) return;
+                }
+            }
+        }
+
+        function applyDamageToPlayer(amount) {
+            if (!player) return;
+            if (player.shield > 0) {
+                const absorbed = Math.min(player.shield, amount);
+                player.shield -= absorbed;
+                const rem = amount - absorbed;
+                if (rem > 0) player.hp -= rem;
+            } else {
+                player.hp -= amount;
+            }
+            addFloatingText(player.x, player.y - 45, `-${Math.round(amount)} HASAR`, '#ef4444');
+
+            if (player.hp <= 0) {
+                player.hp = 0;
+                createExplosion(player.x, player.y, '#ef4444', 40);
+                triggerGameOver('Avcı uçağınızın gövde bütünlüğü sıfırlandı!');
+            }
+        }
+
+        function collectBonus(b) {
+            playSound('bonus');
+            if (b.id === 'Bonus_Yakıt') {
+                player.fuel = Math.min(player.maxFuel, player.fuel + player.maxFuel * 0.45);
+                addFloatingText(b.x, b.y, '+YAKIT DOLUMU', '#f59e0b');
+            } else if (b.id === 'Bonus_Kalkan') {
+                player.shield = Math.min(player.maxShield, player.shield + 70);
+                addFloatingText(b.x, b.y, '+KALKAN ENERJİSİ', '#38bdf8');
+            } else if (b.id === 'Bonus_Cephane') {
+                player.leftMissiles = player.maxLeftMissiles;
+                player.rightMissiles = player.maxRightMissiles;
+                player.weaponLevel = Math.min(3, player.weaponLevel + 1);
+                addFloatingText(b.x, b.y, '+TAM ROKET & SİLAH GÜCÜ', '#f97316');
+            } else if (b.id === 'Bonus_Tamir') {
+                player.hp = Math.min(player.maxHp, player.hp + 50);
+                player.shield = Math.min(player.maxShield, player.shield + 50);
+                addFloatingText(b.x, b.y, '+GÖVDE & KALKAN TAMİRİ', '#22c55e');
+            } else if (b.id === 'Bonus_can') {
+                player.hp = Math.min(player.maxHp, player.hp + 80);
+                addFloatingText(b.x, b.y, '+80 CAN PAKETİ', '#ef4444');
+            }
+            score += 150;
+        }
+
+        /*************************************************************************
+         * 8. ARCADE KABİN SAHNE ÇİZİMİ (RENDER)
+         *************************************************************************/
+        function renderGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Seçilen Haritanın Panoramik Karşı Görünümü (GitHub/Yüklenen görsel varsa onu çizer)
+            const mapSprite = getSprite(selectedMap.id);
+            const horizonY = canvas.height * 0.56;
+
+            if (mapSprite) {
+                ctx.drawImage(mapSprite, 0, 0, canvas.width, canvas.height);
+            } else {
+                // Gökyüzü ve Ufuk Çizgisi
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+                skyGrad.addColorStop(0, selectedMap.skyTop);
+                skyGrad.addColorStop(1, selectedMap.skyHorizon);
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, canvas.width, horizonY);
+
+                // Deniz / Yeryüzü / Uzay Derinlik Tabanı
+                const groundGrad = ctx.createLinearGradient(0, horizonY, 0, canvas.height);
+                groundGrad.addColorStop(0, selectedMap.skyHorizon);
+                groundGrad.addColorStop(0.25, selectedMap.groundColor);
+                groundGrad.addColorStop(1, '#020617');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, horizonY, canvas.width, canvas.height - horizonY);
+
+                // 3D Arcade Perspektif Hız Çizgileri (İleri doğru uçuş hissi)
+                perspectiveGridOffset = (perspectiveGridOffset + 3.5) % 40;
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
+                ctx.lineWidth = 1;
+                const centerX = canvas.width / 2;
+
+                for (let i = -8; i <= 8; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + i * 45, horizonY);
+                    ctx.lineTo(centerX + i * 260, canvas.height);
+                    ctx.stroke();
+                }
+
+                for (let y = horizonY + (perspectiveGridOffset * 0.5); y < canvas.height; y += (y - horizonY) * 0.35 + 6) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+
+            if (gameState !== 'PLAYING' || !player) return;
+
+            // 2. Karşıdaki Düşman Hedeflerini Çiz
+            targets.forEach(t => {
+                drawTargetSpriteOrVector(ctx, t, t.x, t.y, t.baseW * t.scale, t.baseH * t.scale);
+            });
+
+            // 3. Bonus Kutularını Çiz
+            bonuses.forEach(b => {
+                const bSprite = getSprite(b.id);
+                ctx.save();
+                ctx.translate(b.x, b.y);
+                if (bSprite) {
+                    ctx.drawImage(bSprite, -b.r, -b.r, b.r * 2, b.r * 2);
+                } else {
+                    ctx.shadowColor = b.color;
+                    ctx.shadowBlur = 12;
+                    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                    ctx.strokeStyle = b.color;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.roundRect(-b.r, -b.r, b.r * 2, b.r * 2, 8);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    ctx.font = '20px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(b.icon, 0, 1);
+                }
+                ctx.restore();
+            });
+
+            // 4. Hedeflerden Bize Doğru Büyüyerek Gelen Füzeleri Çiz (Uzay_Hedef_Fuze1..3 / Dunya_Hedef_Fuze1..3)
+            incomingMissiles.forEach(im => {
+                const mSprite = getSprite(im.spriteName);
+                const size = 18 + im.z * 52;
+                ctx.save();
+                ctx.translate(im.x, im.y);
+
+                // Tehlike Uyarı Halkası
+                ctx.strokeStyle = `rgba(239, 68, 68, ${0.3 + im.z * 0.7})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.65, 0, Math.PI * 2);
+                ctx.stroke();
+
+                if (mSprite) {
+                    ctx.drawImage(mSprite, -size / 2, -size / 2, size, size);
+                } else {
+                    ctx.fillStyle = '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.28, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.14, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            // 5. Oyuncunun Sağ ve Sol Kanat Roketlerini Çiz (Avcı_Füze_Sol ve Avcı_Füze_Sag)
+            wingMissiles.forEach(m => {
+                const mSprite = getSprite(m.spriteName);
+                const scale = Math.max(0.35, 1 - m.progress * 0.55);
+                const w = 36 * scale;
+                const h = 54 * scale;
+                ctx.save();
+                ctx.translate(m.x, m.y);
+                if (mSprite) {
+                    ctx.drawImage(mSprite, -w / 2, -h / 2, w, h);
+                } else {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(-4 * scale, -14 * scale, 8 * scale, 28 * scale);
+                    ctx.fillStyle = '#f59e0b';
+                    ctx.beginPath();
+                    ctx.arc(0, 14 * scale, 6 * scale, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+
+            // 6. Oyuncu Uçağından Nişangaha Giden Lazer/Makineli İzlerini Çiz
+            bullets.forEach(b => {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(b.x, b.y);
+                ctx.lineTo(b.x + (b.targetX - b.startX) * 0.08, b.y + (b.targetY - b.startY) * 0.08);
+                ctx.stroke();
+            });
+
+            // 7. OYUNCUNUN AVCI UÇAĞI (Arcade Nerf silahı gibi nişangahla birlikte hareket eder)
+            drawFighterSpriteOrVector(ctx, player.plane, player.x, player.y, player.w, player.h, player.tiltX, player.tiltY);
+
+            // Kalkan aktifse uçak etrafında koruyucu enerji halkası
+            if (player.shield > 0) {
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.w * 0.55, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // 8. Patlama Efektleri ve Yazılar
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            floatingTexts.forEach(ft => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, ft.alpha);
+                ctx.font = 'bold 14px Orbitron, sans-serif';
+                ctx.fillStyle = ft.color;
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            });
+
+            // 9. ARCADE NİŞANGAH (CROSSHAIR) ÇİZİMİ
+            ctx.save();
+            ctx.translate(crosshair.x, crosshair.y);
+            ctx.strokeStyle = crosshair.firing ? '#f43f5e' : '#00f0ff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, 22, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(-30, 0); ctx.lineTo(-12, 0);
+            ctx.moveTo(12, 0);  ctx.lineTo(30, 0);
+            ctx.moveTo(0, -30); ctx.lineTo(0, -12);
+            ctx.moveTo(0, 12);  ctx.lineTo(0, 30);
+            ctx.stroke();
+
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.arc(0, 0, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function gameLoop() {
+            updateGame();
+            renderGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        /*************************************************************************
+         * 9. FARE, KLAVYE VE DOKUNMATİK KONTROLLER
+         *************************************************************************/
+        canvas.addEventListener('mousemove', e => {
+            const rect = canvas.getBoundingClientRect();
+            crosshair.x = e.clientX - rect.left;
+            crosshair.y = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('mousedown', e => {
+            if (gameState !== 'PLAYING') return;
+            if (e.button === 0) {
+                crosshair.firing = true;
+            } else if (e.button === 2) {
+                fireWingMissile('left');
+                fireWingMissile('right');
+            }
+        });
+
+        window.addEventListener('mouseup', e => {
+            if (e.button === 0) crosshair.firing = false;
+        });
+
+        canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+        // Dokunmatik Ekran Desteği
+        canvas.addEventListener('touchmove', e => {
+            if (gameState !== 'PLAYING') return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            crosshair.x = touch.clientX - rect.left;
+            crosshair.y = touch.clientY - rect.top;
+            crosshair.firing = true;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            crosshair.firing = false;
+        });
+
+        window.addEventListener('keydown', e => {
+            keys[e.code] = true;
+            if (e.code === 'KeyQ') fireWingMissile('left');
+            if (e.code === 'KeyE') fireWingMissile('right');
+            if (e.code === 'KeyX') {
+                fireWingMissile('left');
+                fireWingMissile('right');
+            }
+            if (e.code === 'Escape' && gameState === 'PLAYING') {
+                stopToMenu();
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            keys[e.code] = false;
+        });
+
+        // UI Buton Dinleyicileri
+        document.getElementById('btnStartGame').addEventListener('click', startGame);
+        document.getElementById('btnBackToMenu').addEventListener('click', stopToMenu);
+        document.getElementById('btnModalMenu').addEventListener('click', stopToMenu);
+        document.getElementById('btnModalRestart').addEventListener('click', startGame);
+
+        document.getElementById('btnFireLeftMissile').addEventListener('click', () => fireWingMissile('left'));
+        document.getElementById('btnFireRightMissile').addEventListener('click', () => fireWingMissile('right'));
+        document.getElementById('btnFireBothMissiles').addEventListener('click', () => {
+            fireWingMissile('left');
+            fireWingMissile('right');
+        });
+
+        // Görsel & GitHub Modalı
+        document.getElementById('btnOpenAssetModal').addEventListener('click', () => {
+            renderManifestGrid();
+            document.getElementById('assetManagerModal').classList.remove('hidden');
+        });
+        document.getElementById('btnCloseAssetModal').addEventListener('click', () => {
+            document.getElementById('assetManagerModal').classList.add('hidden');
+        });
+        document.getElementById('btnSaveToFirebase').addEventListener('click', saveConfigToFirebase);
+
+        document.getElementById('btnCopyManifest').addEventListener('click', () => {
+            const listText = ALL_66_ASSETS.map(n => `${n}${githubFileExt}`).join('\n');
+            const tempInput = document.createElement('textarea');
+            tempInput.value = listText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            const feedback = document.getElementById('firebaseSaveFeedback');
+            feedback.classList.remove('hidden');
+            feedback.innerText = "📋 66 görselin tam dosya adı listesi panoya kopyalandı!";
+        });
+
+        // Başlangıç
+        initMenuUI();
+        updateLoadedAssetCounter();
+        initFirebase();
+        gameLoop();
+    </script>
+</body>
+</html>
