@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Air Combat: Arcade Kabin Simülatörü</title>
+    <title>Air GUN: Arcade Kabin Simülatörü</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -43,6 +43,31 @@
         }
         .arcade-crosshair {
             cursor: none;
+        }
+        /* Askeri Jet HUD Kesik Köşeli Taktiksel Paneller */
+        .tactical-hud-left {
+            clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+            background: linear-gradient(135deg, rgba(2, 18, 28, 0.72) 0%, rgba(4, 38, 52, 0.35) 100%);
+            border-left: 3px solid #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 15px rgba(0, 240, 255, 0.08);
+        }
+        .tactical-hud-right {
+            clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 18px);
+            background: linear-gradient(225deg, rgba(2, 18, 28, 0.72) 0%, rgba(4, 38, 52, 0.35) 100%);
+            border-right: 3px solid #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.15), inset 0 0 15px rgba(0, 240, 255, 0.08);
+        }
+        .tactical-hud-center {
+            clip-path: polygon(0 0, 100% 0, calc(100% - 22px) 100%, 22px 100%);
+            background: linear-gradient(180deg, rgba(2, 22, 34, 0.80) 0%, rgba(2, 18, 28, 0.25) 100%);
+            border-top: 2px solid #00f0ff;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.45);
+        }
+        .hud-segment-bar {
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 6px, rgba(2, 12, 20, 0.85) 6px, rgba(2, 12, 20, 0.85) 8px);
+        }
+        .hud-glow-text {
+            text-shadow: 0 0 8px rgba(0, 240, 255, 0.75);
         }
     </style>
 </head>
@@ -194,128 +219,144 @@
             </div>
         </div>
 
-        <!-- 2. OYUN İÇİ KOKPİT / ARCADE KABİN HUD -->
-        <div id="hudScreen" class="hidden absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-4">
+        <!-- 2. OYUN İÇİ ASKERİ JET TAKTİKSEL HUD (MILITARY AVIONICS HUD) -->
+        <div id="hudScreen" class="hidden absolute inset-0 pointer-events-none z-20 flex flex-col justify-between p-3 sm:p-5">
             
-            <!-- Üst Gösterge Paneli -->
-            <div class="flex flex-wrap justify-between items-start gap-4 w-full max-w-7xl mx-auto">
+            <!-- Üst Taktiksel Gösterge Kuşağı -->
+            <div class="flex flex-wrap justify-between items-start gap-3 w-full max-w-[1600px] mx-auto">
                 
-                <!-- Sol Panel: Can, Dayanıklılık, Yakıt Barları -->
-                <div class="bg-slate-950/85 border-2 border-cyan-500/50 rounded-xl p-3 w-72 backdrop-blur-md shadow-2xl space-y-2 pointer-events-auto">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-1">
-                        <span id="hudPlaneName" class="font-orbitron text-xs font-bold text-cyan-400">AVCI_KAAN</span>
-                        <span id="hudMapType" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-bold">DÜNYA_OKYANUS</span>
+                <!-- SOL TAKTİKSEL PANEL: GÖVDE BÜTÜNLÜĞÜ (HULL), KALKAN (SHIELD), YAKIT (JP-8 FUEL) -->
+                <div class="tactical-hud-left p-3.5 w-72 sm:w-80 backdrop-blur-sm pointer-events-auto">
+                    <div class="flex justify-between items-center border-b border-cyan-500/30 pb-1.5 mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 bg-cyan-400 rotate-45 inline-block"></span>
+                            <span id="hudPlaneName" class="font-orbitron text-xs font-black tracking-widest text-cyan-300 hud-glow-text">AVCI_KAAN</span>
+                        </div>
+                        <span id="hudMapType" class="text-[10px] font-mono px-2 py-0.5 bg-cyan-500/15 border border-cyan-400/40 text-cyan-200 tracking-wider">DÜNYA_OKYANUS</span>
                     </div>
 
-                    <!-- Can (HP) -->
-                    <div>
-                        <div class="flex justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-emerald-400">✚ CAN (HP)</span>
-                            <span id="hudHpText" class="font-mono text-white">200 / 200</span>
+                    <!-- Gövde Bütünlüğü (HULL INTEGRITY) -->
+                    <div class="mb-2">
+                        <div class="flex justify-between text-[11px] font-orbitron font-bold mb-1">
+                            <span class="text-emerald-400 tracking-wider">SYS.HULL // CAN</span>
+                            <span id="hudHpText" class="font-mono text-emerald-300">200 / 200</span>
                         </div>
-                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
-                            <div id="hudHpBar" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-150" style="width: 100%"></div>
-                        </div>
-                    </div>
-
-                    <!-- Dayanıklılık (Zırh/Kalkan) -->
-                    <div>
-                        <div class="flex justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-cyan-400">🛡️ DAYANIKLILIK (KALKAN)</span>
-                            <span id="hudShieldText" class="font-mono text-white">180 / 180</span>
-                        </div>
-                        <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
-                            <div id="hudShieldBar" class="h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full transition-all duration-150" style="width: 100%"></div>
+                        <div class="w-full h-3 bg-slate-950/90 border border-emerald-500/50 relative overflow-hidden">
+                            <div id="hudHpBar" class="h-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-teal-300 transition-all duration-150" style="width: 100%"></div>
+                            <div class="absolute inset-0 hud-segment-bar"></div>
                         </div>
                     </div>
 
-                    <!-- Yakıt -->
-                    <div>
-                        <div class="flex justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-amber-400">⛽ YAKIT BAR</span>
-                            <span id="hudFuelText" class="font-mono text-white">100%</span>
+                    <!-- Dayanıklılık / Kalkan (DEFLECTOR ARMOR) -->
+                    <div class="mb-2">
+                        <div class="flex justify-between text-[11px] font-orbitron font-bold mb-1">
+                            <span class="text-cyan-300 tracking-wider">DEF.SHLD // ZIRH</span>
+                            <span id="hudShieldText" class="font-mono text-cyan-200">180 / 180</span>
                         </div>
-                        <div class="w-full h-2.5 bg-slate-900 rounded-full overflow-hidden border border-slate-700 p-0.5">
-                            <div id="hudFuelBar" class="h-full bg-gradient-to-r from-red-500 via-amber-500 to-yellow-400 rounded-full transition-all duration-150" style="width: 100%"></div>
+                        <div class="w-full h-3 bg-slate-950/90 border border-cyan-500/50 relative overflow-hidden">
+                            <div id="hudShieldBar" class="h-full bg-gradient-to-r from-blue-600 via-cyan-400 to-sky-200 transition-all duration-150" style="width: 100%"></div>
+                            <div class="absolute inset-0 hud-segment-bar"></div>
+                        </div>
+                    </div>
+
+                    <!-- JP-8 Jet Yakıtı (THRUST FUEL) -->
+                    <div>
+                        <div class="flex justify-between text-[11px] font-orbitron font-bold mb-1">
+                            <span class="text-amber-400 tracking-wider">JP-8 FUEL // YAKIT</span>
+                            <span id="hudFuelText" class="font-mono text-amber-300">100%</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-950/90 border border-amber-500/50 relative overflow-hidden">
+                            <div id="hudFuelBar" class="h-full bg-gradient-to-r from-rose-600 via-amber-500 to-yellow-300 transition-all duration-150" style="width: 100%"></div>
+                            <div class="absolute inset-0 hud-segment-bar"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Orta Panel: Arcade Skor, Dalga ve Boss Barı -->
+                <!-- ORTA TAKTİKSEL PANEL: PUSULA ŞERİDİ, KOMUTA SKORU & DALGA RADARI -->
                 <div class="flex flex-col items-center">
-                    <div class="bg-slate-950/90 border-2 border-cyan-500/50 rounded-xl px-7 py-2 backdrop-blur-md text-center shadow-2xl">
-                        <div class="text-[10px] text-cyan-400 font-orbitron tracking-widest font-bold">ARCADE SCORE</div>
-                        <div id="hudScore" class="font-orbitron text-3xl font-black text-white tracking-wider">000000</div>
-                        <div id="hudWaveInfo" class="text-xs font-bold text-amber-400 mt-0.5">DALGA 1 - HEDEFLERİ VUR!</div>
+                    <div class="tactical-hud-center px-10 py-2.5 backdrop-blur-sm text-center min-w-[300px] sm:min-w-[360px]">
+                        <div class="flex items-center justify-center space-x-3 text-[10px] font-mono text-cyan-300/80 tracking-[0.25em] mb-0.5">
+                            <span>HDG <strong id="hudHeadingVal" class="text-cyan-300">090°</strong></span>
+                            <span>•</span>
+                            <span>COMBAT TELEMETRY</span>
+                            <span>•</span>
+                            <span>KILL <strong id="hudKillVal" class="text-amber-300">00</strong></span>
+                        </div>
+                        <div id="hudScore" class="font-orbitron text-3xl sm:text-4xl font-black text-cyan-100 tracking-[0.18em] hud-glow-text">000000</div>
+                        <div id="hudWaveInfo" class="text-[11px] font-orbitron font-bold text-amber-400 tracking-widest mt-0.5">SORTİ DALGA 01 // HEDEFLERİ İMHA ET</div>
                     </div>
 
-                    <!-- Boss Can Barı -->
-                    <div id="bossHudContainer" class="hidden mt-3 w-80 sm:w-[420px] bg-rose-950/95 border-2 border-rose-500 rounded-xl p-2.5 backdrop-blur-md shadow-2xl">
-                        <div class="flex justify-between items-center text-xs font-orbitron font-bold text-rose-200 mb-1">
-                            <span id="bossHudName">⚠ BOSS HEDEF</span>
-                            <span id="bossHudHpText">2000 HP</span>
+                    <!-- Boss Uyarı ve Zırh Barı -->
+                    <div id="bossHudContainer" class="hidden mt-2.5 w-80 sm:w-[460px] bg-rose-950/85 border-y-2 border-rose-500 px-4 py-2 backdrop-blur-md shadow-2xl">
+                        <div class="flex justify-between items-center text-xs font-orbitron font-black text-rose-200 tracking-wider mb-1">
+                            <span id="bossHudName" class="animate-pulse">⚠ DÜŞMAN KOMUTA GEMİSİ</span>
+                            <span id="bossHudHpText" class="font-mono text-amber-300">2000 HP</span>
                         </div>
-                        <div class="w-full h-3.5 bg-slate-950 rounded-full overflow-hidden border border-rose-400/50 p-0.5">
-                            <div id="bossHudBar" class="h-full bg-gradient-to-r from-rose-600 via-red-500 to-amber-400 rounded-full transition-all duration-100" style="width: 100%"></div>
+                        <div class="w-full h-3 bg-slate-950 border border-rose-400/60 relative overflow-hidden">
+                            <div id="bossHudBar" class="h-full bg-gradient-to-r from-rose-700 via-red-500 to-amber-400 transition-all duration-100" style="width: 100%"></div>
+                            <div class="absolute inset-0 hud-segment-bar"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sağ Panel: Sonsuz Makineli & Sağ/Sol Kanat Füze Dolum Barları -->
-                <div class="bg-slate-950/85 border-2 border-cyan-500/50 rounded-xl p-3 w-72 backdrop-blur-md shadow-2xl space-y-2.5 pointer-events-auto">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-1">
-                        <span class="font-orbitron text-xs font-bold text-rose-400">SİLAH & KANAT ROKETLERİ</span>
-                        <span id="hudWeaponLevel" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold">GÜÇ SV.1</span>
+                <!-- SAĞ TAKTİKSEL PANEL: SİLAH TELEMETRİSİ & SAĞ/SOL KANAT PİLON ROKETLERİ -->
+                <div class="tactical-hud-right p-3.5 w-72 sm:w-80 backdrop-blur-sm pointer-events-auto">
+                    <div class="flex justify-between items-center border-b border-cyan-500/30 pb-1.5 mb-2">
+                        <span class="font-orbitron text-xs font-black tracking-widest text-rose-400">ORDNANCE // SİLAH</span>
+                        <span id="hudWeaponLevel" class="text-[10px] font-orbitron px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-400/50 font-bold">MK-1 CANNON</span>
                     </div>
 
-                    <div class="flex items-center justify-between text-xs bg-slate-900/90 px-2.5 py-1.5 rounded border border-slate-800">
-                        <span class="text-slate-300 font-semibold">ANA MAKİNELİ (SOL TIK)</span>
-                        <span class="font-orbitron text-emerald-400 font-bold text-xs">∞ SONSUZ</span>
+                    <div class="flex items-center justify-between text-xs bg-slate-950/75 px-3 py-1.5 border-l-2 border-emerald-400 mb-2.5">
+                        <span class="text-cyan-100 font-orbitron text-[11px] tracking-wider">20MM VULCAN TOPU</span>
+                        <span class="font-orbitron text-emerald-400 font-black text-xs tracking-widest">∞ AKTİF</span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <!-- Sol Kanat (Avcı_Füze_Sol) -->
-                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800 flex flex-col">
-                            <div class="flex justify-between items-center text-[10px] text-slate-300 font-bold mb-1">
-                                <span>SOL ROKET [Q]</span>
-                                <span id="leftMissileCount" class="font-mono text-cyan-300">4/4</span>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <!-- Sol Kanat Pilonu (Avcı_Füze_Sol) -->
+                        <div class="bg-slate-950/75 p-2 border border-cyan-500/40 flex flex-col">
+                            <div class="flex justify-between items-center text-[10px] font-orbitron text-cyan-200 font-bold mb-1">
+                                <span>L-PYLON [Q]</span>
+                                <span id="leftMissileCount" class="font-mono text-amber-300">4/4</span>
                             </div>
-                            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
-                                <div id="leftMissileBar" class="h-full bg-cyan-400 transition-all duration-100" style="width: 100%"></div>
+                            <div class="w-full h-2.5 bg-slate-900 border border-cyan-500/40 relative overflow-hidden">
+                                <div id="leftMissileBar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-100" style="width: 100%"></div>
+                                <div class="absolute inset-0 hud-segment-bar"></div>
                             </div>
-                            <span class="text-[9px] text-slate-400 mt-1 font-mono truncate">Avcı_Füze_Sol</span>
+                            <span class="text-[9px] text-cyan-400/80 mt-1 font-mono truncate">Avcı_Füze_Sol</span>
                         </div>
 
-                        <!-- Sağ Kanat (Avcı_Füze_Sag) -->
-                        <div class="bg-slate-900/90 p-2 rounded border border-slate-800 flex flex-col">
-                            <div class="flex justify-between items-center text-[10px] text-slate-300 font-bold mb-1">
-                                <span>SAĞ ROKET [E]</span>
-                                <span id="rightMissileCount" class="font-mono text-cyan-300">4/4</span>
+                        <!-- Sağ Kanat Pilonu (Avcı_Füze_Sag) -->
+                        <div class="bg-slate-950/75 p-2 border border-cyan-500/40 flex flex-col">
+                            <div class="flex justify-between items-center text-[10px] font-orbitron text-cyan-200 font-bold mb-1">
+                                <span>R-PYLON [E]</span>
+                                <span id="rightMissileCount" class="font-mono text-amber-300">4/4</span>
                             </div>
-                            <div class="w-full h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
-                                <div id="rightMissileBar" class="h-full bg-cyan-400 transition-all duration-100" style="width: 100%"></div>
+                            <div class="w-full h-2.5 bg-slate-900 border border-cyan-500/40 relative overflow-hidden">
+                                <div id="rightMissileBar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-100" style="width: 100%"></div>
+                                <div class="absolute inset-0 hud-segment-bar"></div>
                             </div>
-                            <span class="text-[9px] text-slate-400 mt-1 font-mono truncate">Avcı_Füze_Sag</span>
+                            <span class="text-[9px] text-cyan-400/80 mt-1 font-mono truncate">Avcı_Füze_Sag</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Alt HUD: Hızlı Kanat Roketi Butonları -->
-            <div class="flex justify-between items-end w-full max-w-7xl mx-auto pointer-events-auto">
-                <div class="bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-lg text-xs text-slate-300 hidden md:block">
-                    🎯 <strong class="text-cyan-400">Arcade Kabin Modu:</strong> Uçağınız nişangahla birlikte (Yukarı/Aşağı/Sağa/Sola) hareket eder. Büyüyerek size gelen füzeleri havada vurun veya uçağı çekerek kaçının!
+            <!-- Alt Taktiksel Kuşak: Roket Ateşleme Kontrolleri -->
+            <div class="flex justify-between items-end w-full max-w-[1600px] mx-auto pointer-events-auto">
+                <div class="tactical-hud-left px-4 py-2 text-xs text-cyan-200/90 hidden md:flex items-center space-x-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="font-mono text-[11px]">PANORAMİK KOKPİT KAMERASI AKTİF // NİŞANGAHI SAĞA-SOLA ÇEVİREREK HARİTAYI TARAYIN</span>
                 </div>
 
-                <div class="flex space-x-2 ml-auto">
-                    <button id="btnFireLeftMissile" class="bg-cyan-950/90 hover:bg-cyan-900 active:scale-95 text-cyan-200 border border-cyan-500/60 px-4 py-2.5 rounded-xl font-orbitron text-xs font-bold shadow-lg">
-                        🚀 SOL FÜZE (Q)
+                <div class="flex space-x-2.5 ml-auto">
+                    <button id="btnFireLeftMissile" class="tactical-hud-left hover:brightness-125 active:scale-95 text-cyan-200 px-4 py-2.5 font-orbitron text-xs font-bold tracking-wider transition">
+                        🚀 SOL ROKET [Q]
                     </button>
-                    <button id="btnFireBothMissiles" class="bg-rose-950/90 hover:bg-rose-900 active:scale-95 text-rose-200 border border-rose-500/60 px-5 py-2.5 rounded-xl font-orbitron text-xs font-bold shadow-lg">
-                        💥 ÇİFT KANAT SALVO (SAĞ TIK)
+                    <button id="btnFireBothMissiles" class="bg-rose-950/85 hover:bg-rose-900 active:scale-95 text-rose-200 border-2 border-rose-500/80 px-5 py-2.5 font-orbitron text-xs font-black tracking-widest shadow-lg shadow-rose-600/30 transition">
+                        💥 ÇİFT PİLON SALVO [SAĞ TIK]
                     </button>
-                    <button id="btnFireRightMissile" class="bg-cyan-950/90 hover:bg-cyan-900 active:scale-95 text-cyan-200 border border-cyan-500/60 px-4 py-2.5 rounded-xl font-orbitron text-xs font-bold shadow-lg">
-                        🚀 SAĞ FÜZE (E)
+                    <button id="btnFireRightMissile" class="tactical-hud-right hover:brightness-125 active:scale-95 text-cyan-200 px-4 py-2.5 font-orbitron text-xs font-bold tracking-wider transition">
+                        🚀 SAĞ ROKET [E]
                     </button>
                 </div>
             </div>
@@ -370,13 +411,13 @@
                     <div class="flex items-center space-x-2.5">
                         <input id="chkRemoveWhiteBg" type="checkbox" checked class="w-4 h-4 accent-emerald-500 rounded cursor-pointer">
                         <label for="chkRemoveWhiteBg" class="font-bold text-emerald-300 cursor-pointer">
-                            ✂️ Yüklenen Görsellerin Etrafındaki Beyaz Arka Planı & Fazlalıkları Otomatik Kaldır (Haritalar Hariç)
+                            ✂️ Yüklenen Görsellerin Etrafındaki Beyaz Arka Planı & Gölge Fazlalıklarını Kaldır (Haritalar Hariç)
                         </label>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <span class="text-slate-400">Beyaz Toleransı:</span>
-                        <input id="rngWhiteTolerance" type="range" min="180" max="252" value="228" class="w-28 accent-cyan-400 cursor-pointer">
-                        <span id="valWhiteTolerance" class="font-mono text-cyan-300 w-8">228</span>
+                        <span class="text-slate-400">Beyaz & Gölge Toleransı:</span>
+                        <input id="rngWhiteTolerance" type="range" min="150" max="248" value="192" class="w-28 accent-cyan-400 cursor-pointer">
+                        <span id="valWhiteTolerance" class="font-mono text-cyan-300 w-8">192</span>
                     </div>
                 </div>
 
@@ -591,7 +632,7 @@
         let githubBaseUrl = "";
         let githubFileExt = ".png";
         let removeWhiteBgEnabled = true;
-        let whiteBgTolerance = 228;
+        let whiteBgTolerance = 192; // Uçağın altındaki açık gri gölgeyi de temizlemek için 192
         let db = null;
         let auth = null;
         let currentUser = null;
@@ -605,10 +646,10 @@
         }
 
         /**
-         * NERF TARZI OTOMATİK BEYAZ ARKA PLAN VE FAZLA BOŞLUK TEMİZLEYİCİ
-         * 1) Dış kenarlardan başlayarak (Flood-Fill) beyaz/açık gri arka plan piksellerini şeffaf yapar (uçağın içindeki parlak beyaz detayları korur).
+         * GELİŞMİŞ BEYAZ ARKA PLAN, KART GÖLGESİ VE FAZLA BOŞLUK TEMİZLEYİCİ
+         * 1) Dış kenarlardan başlayarak (Flood-Fill) hem beyaz arka planı hem de uçağın altındaki gri stüdyo gölgesini (renk doygunluğu düşük açık gri pikselleri) tamamen şeffaf yapar.
          * 2) Kalan kenar piksellerine yumuşatma (feathering) uygular.
-         * 3) Etrafındaki gereksiz şeffaf/beyaz boşlukları kırparak (Auto-Crop) görseli tam merkeze oturtur.
+         * 3) Etrafındaki gereksiz boşlukları kırparak (Auto-Crop) uçağın ve hedeflerin gerçek en-boy oranını (aspect ratio) korur.
          */
         function processAndCleanSprite(img, assetName) {
             if (!removeWhiteBgEnabled || isMapAsset(assetName)) {
@@ -633,15 +674,20 @@
                 const queue = new Int32Array(totalPixels);
                 let head = 0, tail = 0;
 
-                const threshold = whiteBgTolerance; // Varsayılan 228
+                const threshold = whiteBgTolerance; // Varsayılan 192
 
                 function isBackgroundLike(idx) {
                     const p = idx * 4;
                     const r = data[p], g = data[p + 1], b = data[p + 2], a = data[p + 3];
                     if (a < 25) return true;
-                    // Neredeyse beyaz veya çok açık gri/gölge çerçevesi kontrolü
-                    const maxDiff = Math.max(Math.abs(r - g), Math.abs(r - b), Math.abs(g - b));
-                    return (r >= threshold && g >= threshold && b >= threshold && maxDiff <= 28);
+                    const maxC = Math.max(r, g, b);
+                    const minC = Math.min(r, g, b);
+                    const chroma = maxC - minC; // Renk doygunluğu farkı
+                    const lum = (r + g + b) / 3;
+                    // Tam beyaz/açık gri arka plan VEYA uçağın altındaki renksiz açık gri gölge
+                    if (lum >= threshold && chroma <= 26) return true;
+                    if (lum >= threshold - 25 && chroma <= 12) return true;
+                    return false;
                 }
 
                 // Dört kenardaki pikselleri başlangıç noktası olarak kuyruğa ekle
@@ -658,7 +704,7 @@
                     if (isBackgroundLike(rightIdx) && !visited[rightIdx]) { visited[rightIdx] = 1; queue[tail++] = rightIdx; }
                 }
 
-                // Flood-Fill ile dıştan içe tüm beyaz arka planı şeffaf yap
+                // 8-Yönlü Flood-Fill ile dıştan içe tüm beyaz arka planı ve alt gölgeyi şeffaf yap
                 while (head < tail) {
                     const curr = queue[head++];
                     const p = curr * 4;
@@ -667,22 +713,19 @@
                     const cx = curr % w;
                     const cy = (curr / w) | 0;
 
-                    // 4 komşu piksel
-                    if (cx > 0) {
-                        const n = curr - 1;
-                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
-                    }
-                    if (cx < w - 1) {
-                        const n = curr + 1;
-                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
-                    }
-                    if (cy > 0) {
-                        const n = curr - w;
-                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
-                    }
-                    if (cy < h - 1) {
-                        const n = curr + w;
-                        if (!visited[n] && isBackgroundLike(n)) { visited[n] = 1; queue[tail++] = n; }
+                    for (let dy = -1; dy <= 1; dy++) {
+                        const ny = cy + dy;
+                        if (ny < 0 || ny >= h) continue;
+                        for (let dx = -1; dx <= 1; dx++) {
+                            if (dx === 0 && dy === 0) continue;
+                            const nx = cx + dx;
+                            if (nx < 0 || nx >= w) continue;
+                            const n = ny * w + nx;
+                            if (!visited[n] && isBackgroundLike(n)) {
+                                visited[n] = 1;
+                                queue[tail++] = n;
+                            }
+                        }
                     }
                 }
 
@@ -694,7 +737,6 @@
                         const p = idx * 4;
                         if (data[p + 3] === 0) continue;
 
-                        // Eğer komşularından biri şeffaf olduysa ve bu piksel çok açık renkliyse yarı şeffaf yap (beyaz haleyi yok et)
                         const hasClearedNeighbor =
                             (x > 0 && visited[idx - 1]) ||
                             (x < w - 1 && visited[idx + 1]) ||
@@ -702,13 +744,15 @@
                             (y < h - 1 && visited[idx + w]);
 
                         if (hasClearedNeighbor) {
-                            const lum = (data[p] + data[p + 1] + data[p + 2]) / 3;
-                            if (lum > threshold - 25) {
-                                data[p + 3] = Math.min(data[p + 3], Math.max(0, Math.round((255 - lum) * 3)));
+                            const r = data[p], g = data[p + 1], b = data[p + 2];
+                            const lum = (r + g + b) / 3;
+                            const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+                            if (lum > threshold - 35 && chroma < 32) {
+                                data[p + 3] = Math.min(data[p + 3], Math.max(0, Math.round((245 - lum) * 2.2)));
                             }
                         }
 
-                        if (data[p + 3] > 20) {
+                        if (data[p + 3] > 25) {
                             if (x < minX) minX = x;
                             if (x > maxX) maxX = x;
                             if (y < minY) minY = y;
@@ -737,7 +781,6 @@
 
                 return offCanvas;
             } catch (err) {
-                // CORS kısıtlaması olmayan tüm görsellerde temizlenmiş canvas döner; hata olursa orijinali döner
                 return img;
             }
         }
@@ -1052,34 +1095,65 @@
         }
 
         /*************************************************************************
-         * 5. GÖRSEL VEKTÖR & SPRITE ÇİZİM FONKSİYONLARI
+         * 5. GÖRSEL VEKTÖR & SPRITE ÇİZİM FONKSİYONLARI (ORAN KORUMALI & YÜKSEK KALİTE)
          *************************************************************************/
-        function drawFighterSpriteOrVector(ctx, plane, x, y, w, h, tiltX = 0, tiltY = 0) {
+        // Görseli sündürmeden (en-boy oranını koruyarak) merkezde çizer
+        function drawImageKeepAspect(ctx, img, centerX, centerY, maxWidth, maxHeight) {
+            const iw = img.naturalWidth || img.width || maxWidth;
+            const ih = img.naturalHeight || img.height || maxHeight;
+            const scale = Math.min(maxWidth / iw, maxHeight / ih);
+            const dw = iw * scale;
+            const dh = ih * scale;
+            ctx.drawImage(img, centerX - dw / 2, centerY - dh / 2, dw, dh);
+            return { dw, dh };
+        }
+
+        function drawFighterSpriteOrVector(ctx, plane, x, y, w, h, tiltX = 0, tiltY = 0, isInGame = false) {
             const customImg = getSprite(plane.id);
             ctx.save();
             ctx.translate(x, y);
-            ctx.rotate(tiltX * 0.18);
-            ctx.scale(1, 1 - tiltY * 0.08);
+            ctx.rotate(tiltX * 0.22);
+            ctx.scale(1 - Math.abs(tiltX) * 0.08, 1 - tiltY * 0.06);
+
+            // Oyun içinde uçağa derinlik katan dinamik alt gölge ve motor ısı parlaması
+            if (isInGame) {
+                ctx.shadowColor = 'rgba(0, 240, 255, 0.35)';
+                ctx.shadowBlur = 18;
+            }
 
             if (customImg) {
-                ctx.drawImage(customImg, -w / 2, -h / 2, w, h);
+                drawImageKeepAspect(ctx, customImg, 0, 0, w, h);
+
+                // Oyun içinde jet motorlarının arkasına dinamik afterburner (art yakıcı) alev efekti
+                if (isInGame) {
+                    const pulse = 0.85 + Math.random() * 0.35;
+                    const gradL = ctx.createRadialGradient(-w * 0.07, h * 0.32, 2, -w * 0.07, h * 0.38, 22 * pulse);
+                    gradL.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                    gradL.addColorStop(0.4, 'rgba(56, 189, 248, 0.75)');
+                    gradL.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                    ctx.fillStyle = gradL;
+                    ctx.beginPath();
+                    ctx.arc(-w * 0.07, h * 0.34, 22 * pulse, 0, Math.PI * 2);
+                    ctx.arc(w * 0.07, h * 0.34, 22 * pulse, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
                 ctx.restore();
                 return;
             }
 
-            // Çift Motor Afterburner Alevi (Arkadan / Üstten Perspektif)
-            const flame = 12 + Math.random() * 10;
+            // Çift Motor Afterburner Alevi (Yedek Vektör Çizimi)
+            const flame = 14 + Math.random() * 12;
             const grad = ctx.createLinearGradient(0, h * 0.3, 0, h * 0.3 + flame);
             grad.addColorStop(0, '#ffffff');
             grad.addColorStop(0.5, '#38bdf8');
             grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.beginPath();
-            ctx.arc(-w * 0.1, h * 0.36, 6, 0, Math.PI * 2);
-            ctx.arc(w * 0.1, h * 0.36, 6, 0, Math.PI * 2);
+            ctx.arc(-w * 0.1, h * 0.36, 7, 0, Math.PI * 2);
+            ctx.arc(w * 0.1, h * 0.36, 7, 0, Math.PI * 2);
             ctx.fill();
 
-            // Gövde Çizimi
             ctx.fillStyle = plane.color;
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1.5;
@@ -1110,7 +1184,6 @@
             ctx.fill();
             ctx.stroke();
 
-            // Kokpit Camı
             ctx.fillStyle = '#38bdf8';
             ctx.beginPath();
             ctx.ellipse(0, -h * 0.12, w * 0.08, h * 0.16, 0, 0, Math.PI * 2);
@@ -1119,57 +1192,102 @@
             ctx.restore();
         }
 
-        function drawTargetSpriteOrVector(ctx, target, drawX, drawY, drawW, drawH) {
+        function drawTargetSpriteOrVector(ctx, target, drawX, drawY, maxW, maxH, isLocked = false) {
             const customImg = getSprite(target.id);
             ctx.save();
             ctx.translate(drawX, drawY);
+            // Hedefin sağa/sola hareketine göre hafif yatış açısı
+            ctx.rotate((target.vx || 0) * 0.04);
+
+            let actualW = maxW;
+            let actualH = maxH;
 
             if (customImg) {
-                ctx.drawImage(customImg, -drawW / 2, -drawH / 2, drawW, drawH);
+                const dims = drawImageKeepAspect(ctx, customImg, 0, 0, maxW, maxH);
+                actualW = dims.dw;
+                actualH = dims.dh;
             } else {
                 ctx.fillStyle = target.color || '#ef4444';
                 ctx.strokeStyle = target.isBoss ? '#fde047' : '#e2e8f0';
-                ctx.lineWidth = target.isBoss ? 2.5 : 1.3;
+                ctx.lineWidth = target.isBoss ? 2.5 : 1.5;
 
                 ctx.beginPath();
                 if (target.shape === 'jelly') {
-                    ctx.arc(0, -drawH * 0.1, drawW * 0.38, Math.PI, 0, false);
-                    ctx.lineTo(drawW * 0.3, drawH * 0.2);
-                    ctx.lineTo(-drawW * 0.3, drawH * 0.2);
+                    ctx.arc(0, -maxH * 0.1, maxW * 0.38, Math.PI, 0, false);
+                    ctx.lineTo(maxW * 0.3, maxH * 0.2);
+                    ctx.lineTo(-maxW * 0.3, maxH * 0.2);
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
                 } else if (target.shape === 'heli') {
-                    ctx.ellipse(0, 0, drawW * 0.25, drawH * 0.4, 0, 0, Math.PI * 2);
+                    ctx.ellipse(0, 0, maxW * 0.25, maxH * 0.4, 0, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
                     ctx.strokeStyle = '#e2e8f0';
                     ctx.beginPath();
-                    ctx.moveTo(-drawW * 0.48, 0);
-                    ctx.lineTo(drawW * 0.48, 0);
+                    ctx.moveTo(-maxW * 0.48, 0);
+                    ctx.lineTo(maxW * 0.48, 0);
                     ctx.stroke();
                 } else {
-                    ctx.moveTo(0, drawH * 0.46);
-                    ctx.lineTo(drawW * 0.2, drawH * 0.12);
-                    ctx.lineTo(drawW * 0.48, -drawH * 0.1);
-                    ctx.lineTo(drawW * 0.3, -drawH * 0.36);
-                    ctx.lineTo(0, -drawH * 0.24);
-                    ctx.lineTo(-drawW * 0.3, -drawH * 0.36);
-                    ctx.lineTo(-drawW * 0.48, -drawH * 0.1);
-                    ctx.lineTo(-drawW * 0.2, drawH * 0.12);
+                    ctx.moveTo(0, maxH * 0.46);
+                    ctx.lineTo(maxW * 0.2, maxH * 0.12);
+                    ctx.lineTo(maxW * 0.48, -maxH * 0.1);
+                    ctx.lineTo(maxW * 0.3, -maxH * 0.36);
+                    ctx.lineTo(0, -maxH * 0.24);
+                    ctx.lineTo(-maxW * 0.3, -maxH * 0.36);
+                    ctx.lineTo(-maxW * 0.48, -maxH * 0.1);
+                    ctx.lineTo(-maxW * 0.2, maxH * 0.12);
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();
                 }
             }
 
-            // Hedef Can Barı ve İsim Etiketi
+            ctx.restore();
+
+            // Askeri HUD Hedef Kilitleme Çerçevesi (Target Lock Brackets) & Taktiksel Can Barı
+            ctx.save();
+            ctx.translate(drawX, drawY);
+            const boxW = Math.max(64, actualW * 0.92);
+            const boxH = Math.max(54, actualH * 0.92);
+            const halfW = boxW / 2;
+            const halfH = boxH / 2;
+            const corner = 10;
+
+            ctx.strokeStyle = isLocked ? 'rgba(255, 42, 85, 0.95)' : 'rgba(0, 240, 255, 0.55)';
+            ctx.lineWidth = isLocked ? 2 : 1.4;
+
+            // 4 Köşe Taktiksel Braketi
+            ctx.beginPath();
+            // Sol Üst
+            ctx.moveTo(-halfW, -halfH + corner); ctx.lineTo(-halfW, -halfH); ctx.lineTo(-halfW + corner, -halfH);
+            // Sağ Üst
+            ctx.moveTo(halfW - corner, -halfH); ctx.lineTo(halfW, -halfH); ctx.lineTo(halfW, -halfH + corner);
+            // Sağ Alt
+            ctx.moveTo(halfW, halfH - corner); ctx.lineTo(halfW, halfH); ctx.lineTo(halfW - corner, halfH);
+            // Sol Alt
+            ctx.moveTo(-halfW + corner, halfH); ctx.lineTo(-halfW, halfH); ctx.lineTo(-halfW, halfH - corner);
+            ctx.stroke();
+
             if (!target.isBoss) {
-                const bw = Math.max(40, drawW * 0.85);
-                ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                ctx.fillRect(-bw / 2, -drawH / 2 - 10, bw, 5);
-                ctx.fillStyle = '#22c55e';
-                ctx.fillRect(-bw / 2, -drawH / 2 - 10, bw * Math.max(0, target.hp / target.maxHp), 5);
+                const hpRatio = Math.max(0, target.hp / target.maxHp);
+                const barW = Math.max(56, boxW * 0.85);
+                const barY = -halfH - 12;
+
+                ctx.fillStyle = 'rgba(2, 12, 22, 0.85)';
+                ctx.fillRect(-barW / 2, barY, barW, 5);
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-barW / 2, barY, barW, 5);
+
+                ctx.fillStyle = hpRatio > 0.5 ? '#10b981' : (hpRatio > 0.25 ? '#f59e0b' : '#f43f5e');
+                ctx.fillRect(-barW / 2 + 1, barY + 1, (barW - 2) * hpRatio, 3);
+
+                // Mesafe ve Hedef Kodu Telemetrisi
+                ctx.font = 'bold 9px Orbitron, monospace';
+                ctx.fillStyle = isLocked ? '#fda4af' : '#67e8f9';
+                ctx.textAlign = 'left';
+                ctx.fillText(`TGT // ${Math.round(target.hp)}`, -barW / 2, barY - 3);
             }
 
             ctx.restore();
@@ -1299,6 +1417,11 @@
         let floatingTexts = [];
         let perspectiveGridOffset = 0;
 
+        // Panoramik Kamera (Parallax) Değişkenleri: Mouse sağa/sola/yukarı/aşağı gittikçe arka plan ve dünya kayar
+        let camOffsetX = 0;
+        let camOffsetY = 0;
+        let camTiltAngle = 0;
+
         let score = 0;
         let kills = 0;
         let waveNumber = 1;
@@ -1330,13 +1453,13 @@
             crosshair.x = canvas.width / 2;
             crosshair.y = canvas.height * 0.42;
 
-            // Oyuncunun Uçağı (Arcade Nerf silahı gibi nişangahı takip ederek yukarı/aşağı/sağa/sola hareket eder)
+            // Oyuncunun Uçağı (Çok daha büyük, detaylı ve gerçekçi avcı uçağı boyutlarında)
             player = {
                 plane: selectedPlane,
                 x: canvas.width / 2,
-                y: canvas.height - 125,
-                w: 118,
-                h: 118,
+                y: canvas.height - 135,
+                w: 225,
+                h: 225,
                 hp: selectedPlane.hp,
                 maxHp: selectedPlane.hp,
                 shield: selectedPlane.armor,
@@ -1354,8 +1477,13 @@
                 maxRightMissiles: 4,
                 rightRecharge: 0,
                 tiltX: 0,
-                tiltY: 0
+                tiltY: 0,
+                shieldHitTimer: 0
             };
+
+            camOffsetX = 0;
+            camOffsetY = 0;
+            camTiltAngle = 0;
 
             bullets = [];
             wingMissiles = [];
@@ -1449,17 +1577,20 @@
             const pool = ENEMY_POOLS[selectedMap.type].regular;
             const tpl = pool[Math.floor(Math.random() * pool.length)];
             const hpScale = 1 + (waveNumber - 1) * 0.18;
+            // Derinlik katmanı: Bazı hedefler biraz daha uzakta, bazıları daha yakında ve büyük
+            const depthScale = 0.85 + Math.random() * 0.45;
 
             targets.push({
                 id: tpl.id,
                 name: tpl.name,
-                x: 100 + Math.random() * (canvas.width - 200),
-                y: 110 + Math.random() * (canvas.height * 0.42),
-                vx: (Math.random() < 0.5 ? -1 : 1) * (1.5 + tpl.speed),
-                vy: (Math.random() - 0.5) * 1.2,
-                baseW: 78,
-                baseH: 78,
-                scale: 0.75 + Math.random() * 0.35,
+                x: 80 + Math.random() * (canvas.width - 160),
+                y: 125 + Math.random() * (canvas.height * 0.38),
+                vx: (Math.random() < 0.5 ? -1 : 1) * (1.4 + tpl.speed),
+                vy: (Math.random() - 0.5) * 1.1,
+                baseW: 138,
+                baseH: 138,
+                scale: depthScale,
+                parallaxFactor: 0.25 + depthScale * 0.22,
                 hp: Math.round(tpl.hp * hpScale),
                 maxHp: Math.round(tpl.hp * hpScale),
                 score: tpl.score,
@@ -1481,12 +1612,13 @@
                 id: tpl.id,
                 name: tpl.name,
                 x: canvas.width / 2,
-                y: 165,
-                vx: 2.2,
-                vy: 0.6,
-                baseW: 190,
-                baseH: 145,
+                y: 195,
+                vx: 2.1,
+                vy: 0.55,
+                baseW: 320,
+                baseH: 230,
                 scale: 1,
+                parallaxFactor: 0.35,
                 hp: Math.round(tpl.hp * hpScale),
                 maxHp: Math.round(tpl.hp * hpScale),
                 score: tpl.score,
@@ -1511,9 +1643,9 @@
                 color: tpl.color,
                 icon: tpl.icon,
                 x: x || (120 + Math.random() * (canvas.width - 240)),
-                y: y || (140 + Math.random() * (canvas.height * 0.45)),
-                vy: 1.1,
-                r: 28
+                y: y || (140 + Math.random() * (canvas.height * 0.42)),
+                vy: 1.05,
+                r: 36
             });
         }
 
@@ -1550,9 +1682,19 @@
 
             document.getElementById('hudScore').innerText = String(score).padStart(6, '0');
             document.getElementById('hudWaveInfo').innerText = activeBoss
-                ? `DALGA ${waveNumber} - BOSS SAVAŞI!`
-                : `DALGA ${waveNumber} (${currentWaveKills}/${waveKillsNeeded} HEDEF)`;
-            document.getElementById('hudWeaponLevel').innerText = `GÜÇ SV.${player.weaponLevel}`;
+                ? `SORTİ DALGA 0${waveNumber} // BOSS SAVAŞI AKTİF!`
+                : `SORTİ DALGA 0${waveNumber} // HEDEF: ${currentWaveKills}/${waveKillsNeeded}`;
+            document.getElementById('hudWeaponLevel').innerText = `MK-${player.weaponLevel} CANNON`;
+
+            const hdgEl = document.getElementById('hudHeadingVal');
+            if (hdgEl) {
+                const headingDeg = Math.round(90 + (crosshair.x / Math.max(1, canvas.width) - 0.5) * 90);
+                hdgEl.innerText = `${String(headingDeg).padStart(3, '0')}°`;
+            }
+            const killEl = document.getElementById('hudKillVal');
+            if (killEl) {
+                killEl.innerText = String(kills).padStart(2, '0');
+            }
 
             document.getElementById('leftMissileCount').innerText = `${player.leftMissiles}/${player.maxLeftMissiles}`;
             const leftPct = player.leftMissiles === player.maxLeftMissiles ? 100 : (player.leftRecharge / 140) * 100;
@@ -1582,16 +1724,30 @@
             crosshair.x = Math.max(50, Math.min(canvas.width - 50, crosshair.x));
             crosshair.y = Math.max(70, Math.min(canvas.height - 90, crosshair.y));
 
-            // Arcade Nerf Silahı gibi Oyuncu Uçağı da Nişangahla Birlikte Yukarı/Aşağı/Sağa/Sola Hareket Eder
+            // PANORAMİK PARALLAX KAMERA HAREKETİ:
+            // Fareyi/nişangahı sağa sola ve yukarı aşağı çevirdikçe arka plan haritası ters yönde kayarak derinlik hissi verir
+            const normMouseX = (crosshair.x / Math.max(1, canvas.width)) - 0.5; // -0.5 ile +0.5 arası
+            const normMouseY = (crosshair.y / Math.max(1, canvas.height)) - 0.5;
+            const maxPanX = canvas.width * 0.16;  // Ekranın %32 daha geniş alanı taranabilir
+            const maxPanY = canvas.height * 0.10; // Ekranın %20 daha yüksek alanı taranabilir
+
+            const targetCamX = -normMouseX * maxPanX * 2;
+            const targetCamY = -normMouseY * maxPanY * 2;
+            camOffsetX += (targetCamX - camOffsetX) * 0.08;
+            camOffsetY += (targetCamY - camOffsetY) * 0.08;
+            camTiltAngle += (-normMouseX * 0.045 - camTiltAngle) * 0.08;
+
+            // Oyuncu Uçağı Nişangahla Birlikte Yukarı/Aşağı/Sağa/Sola Akıcı Hareket Eder
             const desiredPlayerX = crosshair.x;
-            const desiredPlayerY = Math.max(canvas.height * 0.45, Math.min(canvas.height - 75, crosshair.y + 150));
+            const desiredPlayerY = Math.max(canvas.height * 0.46, Math.min(canvas.height - 85, crosshair.y + 165));
 
             const diffX = desiredPlayerX - player.x;
             const diffY = desiredPlayerY - player.y;
-            player.x += diffX * 0.18;
-            player.y += diffY * 0.18;
-            player.tiltX = Math.max(-1, Math.min(1, diffX * 0.025));
+            player.x += diffX * 0.16;
+            player.y += diffY * 0.16;
+            player.tiltX = Math.max(-1.2, Math.min(1.2, diffX * 0.022));
             player.tiltY = Math.max(-1, Math.min(1, diffY * 0.02));
+            if (player.shieldHitTimer > 0) player.shieldHitTimer--;
 
             // 2. Yakıt Tüketimi
             player.fuel -= 1 / 60;
@@ -1617,31 +1773,31 @@
                 }
             }
 
-            // 4. Sonsuz Mermili Ana Makineli Tüfek (Uçağın Namlularından Nişangaha Doğru Ateş)
+            // 4. Sonsuz Mermili Ana Makineli Tüfek (Uçağın Çift Namlusundan Nişangaha Doğru Ateş)
             if (player.gunCooldown > 0) player.gunCooldown--;
             if ((crosshair.firing || keys['Space']) && player.gunCooldown <= 0) {
                 const dmg = player.damage * (0.24 + (player.weaponLevel - 1) * 0.07);
                 bullets.push({
-                    startX: player.x - 22,
-                    startY: player.y - 25,
-                    x: player.x - 22,
-                    y: player.y - 25,
-                    targetX: crosshair.x + (Math.random() - 0.5) * 14,
-                    targetY: crosshair.y + (Math.random() - 0.5) * 14,
+                    startX: player.x - 38,
+                    startY: player.y - 35,
+                    x: player.x - 38,
+                    y: player.y - 35,
+                    targetX: crosshair.x + (Math.random() - 0.5) * 12,
+                    targetY: crosshair.y + (Math.random() - 0.5) * 12,
                     progress: 0,
                     dmg
                 });
                 bullets.push({
-                    startX: player.x + 22,
-                    startY: player.y - 25,
-                    x: player.x + 22,
-                    y: player.y - 25,
-                    targetX: crosshair.x + (Math.random() - 0.5) * 14,
-                    targetY: crosshair.y + (Math.random() - 0.5) * 14,
+                    startX: player.x + 38,
+                    startY: player.y - 35,
+                    x: player.x + 38,
+                    y: player.y - 35,
+                    targetX: crosshair.x + (Math.random() - 0.5) * 12,
+                    targetY: crosshair.y + (Math.random() - 0.5) * 12,
                     progress: 0,
                     dmg
                 });
-                player.gunCooldown = 6;
+                player.gunCooldown = 5;
                 playSound('gun');
             }
 
@@ -1804,20 +1960,25 @@
             // 2. Bonus sandıklarını vurarak toplama (Arcade Nerf tarzı)
             for (let i = bonuses.length - 1; i >= 0; i--) {
                 const b = bonuses[i];
-                if (Math.hypot(hx - b.x, hy - b.y) <= b.r + hitRadiusBonus) {
+                const renderX = b.x + camOffsetX * 0.2;
+                const renderY = b.y + camOffsetY * 0.2;
+                if (Math.hypot(hx - renderX, hy - renderY) <= b.r + hitRadiusBonus) {
                     collectBonus(b);
                     bonuses.splice(i, 1);
                     if (!isAreaMissile) return;
                 }
             }
 
-            // 3. Düşman Hedeflerini Vurma
+            // 3. Düşman Hedeflerini Vurma (Parallax konumu hesaba katılarak)
             for (let i = targets.length - 1; i >= 0; i--) {
                 const t = targets[i];
+                const pf = t.parallaxFactor || 0.35;
+                const renderX = t.x + camOffsetX * pf;
+                const renderY = t.y + camOffsetY * pf;
                 const w = t.baseW * t.scale + hitRadiusBonus;
                 const h = t.baseH * t.scale + hitRadiusBonus;
 
-                if (Math.abs(hx - t.x) <= w * 0.5 && Math.abs(hy - t.y) <= h * 0.5) {
+                if (Math.abs(hx - renderX) <= w * 0.48 && Math.abs(hy - renderY) <= h * 0.48) {
                     t.hp -= dmg;
                     createExplosion(hx, hy, '#38bdf8', 4);
 
@@ -1825,11 +1986,11 @@
                         score += t.score;
                         kills++;
                         currentWaveKills++;
-                        createExplosion(t.x, t.y, t.color, t.isBoss ? 45 : 20);
+                        createExplosion(renderX, renderY, t.color, t.isBoss ? 48 : 24);
                         playSound('explosion');
 
-                        if (t.isBoss || Math.random() < 0.32) {
-                            spawnBonus(t.x, t.y);
+                        if (t.isBoss || Math.random() < 0.34) {
+                            spawnBonus(renderX, renderY);
                         }
 
                         if (t.isBoss) {
@@ -1838,7 +1999,7 @@
                             waveNumber++;
                             currentWaveKills = 0;
                             waveKillsNeeded += 5;
-                            addFloatingText(canvas.width / 2, canvas.height * 0.35, `DALGA ${waveNumber} BAŞLADI!`, '#fbbf24');
+                            addFloatingText(canvas.width / 2, canvas.height * 0.35, `SORTİ DALGA 0${waveNumber} BAŞLADI!`, '#fbbf24');
                         }
                         targets.splice(i, 1);
                     }
@@ -1849,6 +2010,7 @@
 
         function applyDamageToPlayer(amount) {
             if (!player) return;
+            player.shieldHitTimer = 22; // Yalnızca darbe anında kalkan dalgası görünür
             if (player.shield > 0) {
                 const absorbed = Math.min(player.shield, amount);
                 player.shield -= absorbed;
@@ -1857,7 +2019,7 @@
             } else {
                 player.hp -= amount;
             }
-            addFloatingText(player.x, player.y - 45, `-${Math.round(amount)} HASAR`, '#ef4444');
+            addFloatingText(player.x, player.y - 65, `-${Math.round(amount)} HASAR`, '#ef4444');
 
             if (player.hp <= 0) {
                 player.hp = 0;
@@ -1891,68 +2053,152 @@
         }
 
         /*************************************************************************
-         * 8. ARCADE KABİN SAHNE ÇİZİMİ (RENDER)
+         * 8. ARCADE KABİN SAHNE ÇİZİMİ (PANORAMİK PARALLAX & ASKERİ JET HUD)
          *************************************************************************/
+        function drawMilitaryFlightOverlay(ctx) {
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.save();
+
+            // Sol Kenar Hız (SPEED MACH) ve Sağ Kenar İrtifa (ALTITUDE FT) Taktiksel Cetvelleri
+            const ladderH = 220;
+            const ladderY = h * 0.5 - ladderH / 2;
+            const speedScroll = (perspectiveGridOffset * 2) % 20;
+            const altScroll = (-camOffsetY * 1.5) % 20;
+
+            ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
+            ctx.fillStyle = 'rgba(0, 240, 255, 0.75)';
+            ctx.font = 'bold 10px Orbitron, monospace';
+            ctx.lineWidth = 1.5;
+
+            // Sol Hız Skalası (SPD)
+            const leftX = 28;
+            ctx.beginPath();
+            ctx.moveTo(leftX + 26, ladderY);
+            ctx.lineTo(leftX + 26, ladderY + ladderH);
+            for (let y = 0; y <= ladderH; y += 20) {
+                const ty = ladderY + ((y + speedScroll) % ladderH);
+                ctx.moveTo(leftX + 16, ty);
+                ctx.lineTo(leftX + 26, ty);
+            }
+            ctx.stroke();
+            ctx.textAlign = 'right';
+            ctx.fillText('MACH 1.8', leftX + 42, ladderY - 8);
+
+            // Sağ İrtifa Skalası (ALT)
+            const rightX = w - 28;
+            ctx.beginPath();
+            ctx.moveTo(rightX - 26, ladderY);
+            ctx.lineTo(rightX - 26, ladderY + ladderH);
+            for (let y = 0; y <= ladderH; y += 20) {
+                const ty = ladderY + ((y + altScroll + ladderH) % ladderH);
+                ctx.moveTo(rightX - 26, ty);
+                ctx.lineTo(rightX - 16, ty);
+            }
+            ctx.stroke();
+            ctx.textAlign = 'left';
+            const currentAlt = Math.round(18500 - (player ? (player.y / h) * 4200 : 0));
+            ctx.fillText(`ALT ${currentAlt} FT`, rightX - 68, ladderY - 8);
+
+            ctx.restore();
+        }
+
         function renderGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 1. Seçilen Haritanın Panoramik Karşı Görünümü (GitHub/Yüklenen görsel varsa onu çizer)
+            // 1. PANORAMİK BÜYÜK HARİTA ARKA PLANI (Ekran boyutundan %36 daha büyük çizilir, mouse ile sağa/sola/yukarı/aşağı kayar)
             const mapSprite = getSprite(selectedMap.id);
-            const horizonY = canvas.height * 0.56;
+            const overscanScale = 1.36;
+            const bgW = canvas.width * overscanScale;
+            const bgH = canvas.height * overscanScale;
+            const bgX = (canvas.width - bgW) / 2 + camOffsetX;
+            const bgY = (canvas.height - bgH) / 2 + camOffsetY;
+            const horizonY = canvas.height * 0.55 + camOffsetY * 0.85;
+
+            ctx.save();
+            // Uçağın manevrasına göre çok hafif ufuk yatışı (kokpit derinlik hissi)
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(camTiltAngle * 0.45);
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
 
             if (mapSprite) {
-                ctx.drawImage(mapSprite, 0, 0, canvas.width, canvas.height);
+                // Haritayı ekranın dışına taşacak şekilde geniş çizerek mouse hareketiyle kaymasını sağlıyoruz
+                ctx.drawImage(mapSprite, bgX, bgY, bgW, bgH);
             } else {
-                // Gökyüzü ve Ufuk Çizgisi
-                const skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
+                const skyGrad = ctx.createLinearGradient(0, bgY, 0, horizonY);
                 skyGrad.addColorStop(0, selectedMap.skyTop);
                 skyGrad.addColorStop(1, selectedMap.skyHorizon);
                 ctx.fillStyle = skyGrad;
-                ctx.fillRect(0, 0, canvas.width, horizonY);
+                ctx.fillRect(bgX, bgY, bgW, horizonY - bgY);
 
-                // Deniz / Yeryüzü / Uzay Derinlik Tabanı
-                const groundGrad = ctx.createLinearGradient(0, horizonY, 0, canvas.height);
+                const groundGrad = ctx.createLinearGradient(0, horizonY, 0, bgY + bgH);
                 groundGrad.addColorStop(0, selectedMap.skyHorizon);
                 groundGrad.addColorStop(0.25, selectedMap.groundColor);
                 groundGrad.addColorStop(1, '#020617');
                 ctx.fillStyle = groundGrad;
-                ctx.fillRect(0, horizonY, canvas.width, canvas.height - horizonY);
+                ctx.fillRect(bgX, horizonY, bgW, bgY + bgH - horizonY);
 
-                // 3D Arcade Perspektif Hız Çizgileri (İleri doğru uçuş hissi)
                 perspectiveGridOffset = (perspectiveGridOffset + 3.5) % 40;
                 ctx.strokeStyle = 'rgba(56, 189, 248, 0.22)';
                 ctx.lineWidth = 1;
-                const centerX = canvas.width / 2;
+                const centerX = canvas.width / 2 + camOffsetX;
 
-                for (let i = -8; i <= 8; i++) {
+                for (let i = -12; i <= 12; i++) {
                     ctx.beginPath();
                     ctx.moveTo(centerX + i * 45, horizonY);
-                    ctx.lineTo(centerX + i * 260, canvas.height);
+                    ctx.lineTo(centerX + i * 280, canvas.height + 120);
                     ctx.stroke();
                 }
 
-                for (let y = horizonY + (perspectiveGridOffset * 0.5); y < canvas.height; y += (y - horizonY) * 0.35 + 6) {
+                for (let y = horizonY + (perspectiveGridOffset * 0.5); y < canvas.height + 80; y += (y - horizonY) * 0.35 + 6) {
                     ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(canvas.width, y);
+                    ctx.moveTo(bgX, y);
+                    ctx.lineTo(bgX + bgW, y);
                     ctx.stroke();
                 }
             }
+            ctx.restore();
+
+            // Kenarlara hafif sinematik kokpit vinyeti
+            const vig = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.width * 0.35, canvas.width / 2, canvas.height / 2, canvas.width * 0.75);
+            vig.addColorStop(0, 'rgba(0,0,0,0)');
+            vig.addColorStop(1, 'rgba(2, 8, 18, 0.42)');
+            ctx.fillStyle = vig;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             if (gameState !== 'PLAYING' || !player) return;
 
-            // 2. Karşıdaki Düşman Hedeflerini Çiz
+            // Askeri Uçuş Cetvelleri (Hız & İrtifa Skalası)
+            drawMilitaryFlightOverlay(ctx);
+
+            // 2. Karşıdaki Düşman Hedeflerini Çiz (Parallax kayması + Oran Korumalı + Taktiksel Lock-On Kutusu)
             targets.forEach(t => {
-                drawTargetSpriteOrVector(ctx, t, t.x, t.y, t.baseW * t.scale, t.baseH * t.scale);
+                const pf = t.parallaxFactor || 0.35;
+                const renderX = t.x + camOffsetX * pf;
+                const renderY = t.y + camOffsetY * pf;
+                const isAimed = Math.hypot(crosshair.x - renderX, crosshair.y - renderY) < (t.baseW * t.scale * 0.55);
+                drawTargetSpriteOrVector(ctx, t, renderX, renderY, t.baseW * t.scale, t.baseH * t.scale, isAimed);
             });
 
-            // 3. Bonus Kutularını Çiz
+            // 3. Bonus Kutularını Çiz (Oran korumalı ve parlak hologram halkalı)
             bonuses.forEach(b => {
                 const bSprite = getSprite(b.id);
+                const renderX = b.x + camOffsetX * 0.2;
+                const renderY = b.y + camOffsetY * 0.2;
                 ctx.save();
-                ctx.translate(b.x, b.y);
+                ctx.translate(renderX, renderY);
+
+                // Hologram Dış Çemberi
+                ctx.strokeStyle = b.color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                ctx.arc(0, 0, b.r * 1.15, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
                 if (bSprite) {
-                    ctx.drawImage(bSprite, -b.r, -b.r, b.r * 2, b.r * 2);
+                    drawImageKeepAspect(ctx, bSprite, 0, 0, b.r * 2.1, b.r * 2.1);
                 } else {
                     ctx.shadowColor = b.color;
                     ctx.shadowBlur = 12;
@@ -1964,7 +2210,7 @@
                     ctx.fill();
                     ctx.stroke();
                     ctx.shadowBlur = 0;
-                    ctx.font = '20px sans-serif';
+                    ctx.font = '22px sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(b.icon, 0, 1);
@@ -1972,22 +2218,27 @@
                 ctx.restore();
             });
 
-            // 4. Hedeflerden Bize Doğru Büyüyerek Gelen Füzeleri Çiz (Uzay_Hedef_Fuze1..3 / Dunya_Hedef_Fuze1..3)
+            // 4. Hedeflerden Bize Doğru Büyüyerek Gelen Füzeleri Çiz (Oran korumalı & Taktiksel Uyarı Elması)
             incomingMissiles.forEach(im => {
                 const mSprite = getSprite(im.spriteName);
-                const size = 18 + im.z * 52;
+                const size = 26 + im.z * 78;
                 ctx.save();
                 ctx.translate(im.x, im.y);
 
-                // Tehlike Uyarı Halkası
-                ctx.strokeStyle = `rgba(239, 68, 68, ${0.3 + im.z * 0.7})`;
+                // Askeri Füze Tehlike Elması (Diamond Warning Reticle)
+                const warnR = size * 0.52;
+                ctx.strokeStyle = `rgba(255, 42, 85, ${0.45 + im.z * 0.55})`;
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.arc(0, 0, size * 0.65, 0, Math.PI * 2);
+                ctx.moveTo(0, -warnR);
+                ctx.lineTo(warnR, 0);
+                ctx.lineTo(0, warnR);
+                ctx.lineTo(-warnR, 0);
+                ctx.closePath();
                 ctx.stroke();
 
                 if (mSprite) {
-                    ctx.drawImage(mSprite, -size / 2, -size / 2, size, size);
+                    drawImageKeepAspect(ctx, mSprite, 0, 0, size, size);
                 } else {
                     ctx.fillStyle = '#f97316';
                     ctx.beginPath();
@@ -1998,19 +2249,28 @@
                     ctx.arc(0, 0, size * 0.14, 0, Math.PI * 2);
                     ctx.fill();
                 }
+
+                // Füze Mesafe Uyarı Yazısı
+                if (im.z > 0.35) {
+                    ctx.font = 'bold 9px Orbitron, monospace';
+                    ctx.fillStyle = '#fda4af';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('MSL WARN', 0, warnR + 11);
+                }
                 ctx.restore();
             });
 
-            // 5. Oyuncunun Sağ ve Sol Kanat Roketlerini Çiz (Avcı_Füze_Sol ve Avcı_Füze_Sag)
+            // 5. Oyuncunun Sağ ve Sol Kanat Roketlerini Çiz (Avcı_Füze_Sol ve Avcı_Füze_Sag - Oran Korumalı & Duman İzli)
             wingMissiles.forEach(m => {
                 const mSprite = getSprite(m.spriteName);
-                const scale = Math.max(0.35, 1 - m.progress * 0.55);
-                const w = 36 * scale;
-                const h = 54 * scale;
+                const scale = Math.max(0.38, 1 - m.progress * 0.55);
+                const maxDim = 76 * scale;
+                const angle = Math.atan2(m.targetY - m.y, m.targetX - m.x) + Math.PI / 2;
                 ctx.save();
                 ctx.translate(m.x, m.y);
+                ctx.rotate(angle * 0.35);
                 if (mSprite) {
-                    ctx.drawImage(mSprite, -w / 2, -h / 2, w, h);
+                    drawImageKeepAspect(ctx, mSprite, 0, 0, maxDim, maxDim);
                 } else {
                     ctx.fillStyle = '#38bdf8';
                     ctx.fillRect(-4 * scale, -14 * scale, 8 * scale, 28 * scale);
@@ -2022,26 +2282,33 @@
                 ctx.restore();
             });
 
-            // 6. Oyuncu Uçağından Nişangaha Giden Lazer/Makineli İzlerini Çiz
+            // 6. Oyuncu Uçağından Nişangaha Giden Çift Vulcan Topu İzli Mermileri (Tracer Rounds)
             bullets.forEach(b => {
-                ctx.strokeStyle = '#38bdf8';
-                ctx.lineWidth = 3;
+                ctx.save();
+                ctx.shadowColor = '#00f0ff';
+                ctx.shadowBlur = 10;
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 3.2;
                 ctx.beginPath();
                 ctx.moveTo(b.x, b.y);
-                ctx.lineTo(b.x + (b.targetX - b.startX) * 0.08, b.y + (b.targetY - b.startY) * 0.08);
+                ctx.lineTo(b.x + (b.targetX - b.startX) * 0.11, b.y + (b.targetY - b.startY) * 0.11);
                 ctx.stroke();
+                ctx.restore();
             });
 
-            // 7. OYUNCUNUN AVCI UÇAĞI (Arcade Nerf silahı gibi nişangahla birlikte hareket eder)
-            drawFighterSpriteOrVector(ctx, player.plane, player.x, player.y, player.w, player.h, player.tiltX, player.tiltY);
+            // 7. OYUNCUNUN AVCI UÇAĞI (Büyük, net, oranı korunmuş ve alt gölgesi temizlenmiş)
+            drawFighterSpriteOrVector(ctx, player.plane, player.x, player.y, player.w, player.h, player.tiltX, player.tiltY, true);
 
-            // Kalkan aktifse uçak etrafında koruyucu enerji halkası
-            if (player.shield > 0) {
-                ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-                ctx.lineWidth = 2;
+            // Kalkan halkası sürekli kaba bir çember olarak durmaz; yalnızca darbe aldığında (shieldHitTimer > 0) enerji dalgası olarak parlar
+            if (player.shield > 0 && player.shieldHitTimer > 0) {
+                const alpha = (player.shieldHitTimer / 22) * 0.65;
+                ctx.save();
+                ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
-                ctx.arc(player.x, player.y, player.w * 0.55, 0, Math.PI * 2);
+                ctx.ellipse(player.x, player.y, player.w * 0.48, player.h * 0.36, 0, 0, Math.PI * 2);
                 ctx.stroke();
+                ctx.restore();
             }
 
             // 8. Patlama Efektleri ve Yazılar
@@ -2065,25 +2332,33 @@
                 ctx.restore();
             });
 
-            // 9. ARCADE NİŞANGAH (CROSSHAIR) ÇİZİMİ
+            // 9. ASKERİ JET HOLOSIGHT NİŞANGAH (HUD PITCH LADDER & RETICLE)
             ctx.save();
             ctx.translate(crosshair.x, crosshair.y);
-            ctx.strokeStyle = crosshair.firing ? '#f43f5e' : '#00f0ff';
-            ctx.lineWidth = 2;
+            ctx.rotate(player.tiltX * 0.12);
+            const retColor = crosshair.firing ? '#ff2a55' : '#00f0ff';
+            ctx.strokeStyle = retColor;
+            ctx.lineWidth = 1.8;
+
+            // Dış Taktiksel Yaylar
             ctx.beginPath();
-            ctx.arc(0, 0, 22, 0, Math.PI * 2);
+            ctx.arc(0, 0, 26, -0.7, 0.7);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 0, 26, Math.PI - 0.7, Math.PI + 0.7);
             ctx.stroke();
 
+            // Uçuş Vektör Çizgileri
             ctx.beginPath();
-            ctx.moveTo(-30, 0); ctx.lineTo(-12, 0);
-            ctx.moveTo(12, 0);  ctx.lineTo(30, 0);
-            ctx.moveTo(0, -30); ctx.lineTo(0, -12);
-            ctx.moveTo(0, 12);  ctx.lineTo(0, 30);
+            ctx.moveTo(-38, 0); ctx.lineTo(-16, 0); ctx.lineTo(-16, 6);
+            ctx.moveTo(38, 0);  ctx.lineTo(16, 0);  ctx.lineTo(16, 6);
+            ctx.moveTo(0, -34); ctx.lineTo(0, -16);
             ctx.stroke();
 
-            ctx.fillStyle = '#f43f5e';
+            // Merkez Lazer Noktası
+            ctx.fillStyle = '#ff2a55';
             ctx.beginPath();
-            ctx.arc(0, 0, 3, 0, Math.PI * 2);
+            ctx.arc(0, 0, 2.8, 0, Math.PI * 2);
             ctx.fill();
             ctx.restore();
         }
