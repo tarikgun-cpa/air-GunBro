@@ -1779,21 +1779,29 @@
         const MAX_ARCADE_LEVELS = 9;
         const POINTS_PER_CONTINUE = 50000;
 
-        // 3 KADEMELİ ZORLUK SİSTEMİ (5 dakikada bitmemesi ve sıkmaması için özel kalibre edildi)
+        // 3 KADEMELİ GERÇEKÇİ ZORLUK SİSTEMİ (Çaylakta 1 vuruş, Pilotta 2 vuruş, Efsanede 3 vuruş & Ağır Hasar)
         const DIFFICULTY_SETTINGS = {
             ROOKIE: {
                 id: 'ROOKIE',
                 name: 'ÇAYLAK PİLOT',
                 shortName: 'ÇAYLAK',
-                baseKills: 20,          // Level 1'de 20 hedef, Level 9'da 68 hedef
+                baseKills: 22,
                 killsPerLevel: 6,
-                enemyHpMult: 1.05,
+                enemyHpMult: 0.95,          // Çaylakta düşmanlar 1 rokette imha olur
                 bossHpMult: 1.25,
-                enemySpeedMult: 0.92,
-                enemyDamageMult: 0.85,
-                fireRateMult: 1.15,     // Düşman daha seyrek ateş eder
-                missileRechargeFrames: 140,
-                bonusIntervalBase: 320,
+                playerGunMult: 1.0,
+                playerMissileMult: 1.40,    // Roketler Çaylak modda çok güçlüdür
+                missileSplashRadius: 95,
+                enemySpeedMult: 0.90,
+                enemyDamageMult: 0.85,      // Düşman füzesi ~14-20 hasar vurur
+                enemyMissileSpeedMult: 0.88,
+                fireRateMult: 1.25,         // Düşman seyrek ateş eder
+                missileRechargeFrames: 140, // ~2.3 saniyede 1 roket dolar
+                pylonCooldownFrames: 30,    // 0.5 sn atış arası bekleme
+                salvoCooldownFrames: 75,    // 1.25 sn çift salvo bekleme
+                fuelBurnMult: 0.85,
+                bonusIntervalBase: 300,
+                bonusDropMult: 1.15,
                 nextDiff: 'VETERAN',
                 nextDiffName: 'SAVAŞ PİLOTU (NORMAL)'
             },
@@ -1801,15 +1809,23 @@
                 id: 'VETERAN',
                 name: 'SAVAŞ PİLOTU',
                 shortName: 'PİLOT',
-                baseKills: 26,          // Level 1'de 26 hedef, Level 9'da 82 hedef (İdeal 15-20 dk sürükleyici tempo)
-                killsPerLevel: 7,
-                enemyHpMult: 1.45,
-                bossHpMult: 1.75,
-                enemySpeedMult: 1.12,
-                enemyDamageMult: 1.15,
-                fireRateMult: 0.90,
-                missileRechargeFrames: 175,
-                bonusIntervalBase: 390,
+                baseKills: 28,
+                killsPerLevel: 8,
+                enemyHpMult: 1.85,          // Normal modda düşmanlar ~2 vuruşta imha olur
+                bossHpMult: 2.30,
+                playerGunMult: 0.78,
+                playerMissileMult: 0.78,
+                missileSplashRadius: 55,
+                enemySpeedMult: 1.15,
+                enemyDamageMult: 1.75,      // Düşman füzesi ~30-44 hasar vurur
+                enemyMissileSpeedMult: 1.15,
+                fireRateMult: 0.82,
+                missileRechargeFrames: 270, // 4.5 saniyede 1 roket dolar
+                pylonCooldownFrames: 90,    // 1.5 sn atış arası bekleme
+                salvoCooldownFrames: 210,   // 3.5 sn çift salvo bekleme
+                fuelBurnMult: 1.15,
+                bonusIntervalBase: 460,
+                bonusDropMult: 0.75,
                 nextDiff: 'ACE',
                 nextDiffName: 'EFSANE AS PİLOT (ZOR)'
             },
@@ -1817,19 +1833,28 @@
                 id: 'ACE',
                 name: 'EFSANE AS PİLOT',
                 shortName: 'EFSANE AS',
-                baseKills: 32,          // Level 1'de 32 hedef, Level 9'da 96 hedef
-                killsPerLevel: 8,
-                enemyHpMult: 1.90,
-                bossHpMult: 2.35,
-                enemySpeedMult: 1.30,
-                enemyDamageMult: 1.45,
-                fireRateMult: 0.72,     // Düşman çok agresif füze atar
-                missileRechargeFrames: 210,
-                bonusIntervalBase: 470,
+                baseKills: 35,
+                killsPerLevel: 10,
+                enemyHpMult: 3.10,          // EFSANE MOD: Düşmanlar tam 3 vuruşta imha olur!
+                bossHpMult: 3.80,           // Boss'lar çok sağlam zırhlıdır
+                playerGunMult: 0.58,
+                playerMissileMult: 0.52,    // Roketler tek atmaz, stratejik kullanılmalı
+                missileSplashRadius: 34,    // Sadece doğrudan isabet ettiği hedefi vurur
+                enemySpeedMult: 1.38,
+                enemyDamageMult: 2.85,      // Düşman füzesi 48 - 72 arası ÇOK AĞIR hasar vurur!
+                enemyMissileSpeedMult: 1.42,
+                fireRateMult: 0.58,         // Düşman füzeleri yağmur gibi gelir
+                missileRechargeFrames: 420, // 7.0 saniyede 1 roket dolar!
+                pylonCooldownFrames: 160,   // ~2.7 sn sol/sağ roket bekleme süresi
+                salvoCooldownFrames: 360,   // 6.0 sn çift salvo bekleme süresi!
+                fuelBurnMult: 1.45,         // Yakıt daha hızlı tükenir, varilleri vurmak şarttır
+                bonusIntervalBase: 640,     // Bonuslar çok nadir gelir
+                bonusDropMult: 0.45,
                 nextDiff: null,
                 nextDiffName: null
             }
         };
+
         let currentDifficulty = DIFFICULTY_SETTINGS.VETERAN;
 
         function setDifficulty(diffKey) {
@@ -1964,9 +1989,12 @@
                 leftMissiles: 4,
                 maxLeftMissiles: 4,
                 leftRecharge: 0,
+                leftFireCooldown: 0,
                 rightMissiles: 4,
                 maxRightMissiles: 4,
                 rightRecharge: 0,
+                rightFireCooldown: 0,
+                salvoFireCooldown: 0,
                 rollAngle: 0,
                 pitchFactor: 0,
                 afterburnerBoost: 0,
@@ -2204,14 +2232,34 @@
          * Bu 3 füze tek bir hedefe gitmek yerine, ekrandaki BİRBİRİNE YAKIN FARKLI 3-4 DÜŞMAN HEDEFİNİ (veya gelen tehlike füzelerini)
          * ayrı ayrı paylaşarak kilitler ve zincirleme şok dalgalı (Shockwave Ring) imha animasyonu ile aynı anda 3-4 hedefi yok eder!
          */
-        function fireWingMissile(side) {
+        function fireWingMissile(side, isSalvoCall = false) {
             if (gameState !== 'PLAYING' || !player) return;
 
-            if (side === 'left' && player.leftMissiles <= 0) return;
-            if (side === 'right' && player.rightMissiles <= 0) return;
+            // Çift Salvo çağrısıysa Salvo bekleme süresini kontrol et
+            if (isSalvoCall && player.salvoFireCooldown > 0) {
+                addFloatingText(player.x, player.y - 50, `⏳ SALVO SOĞUTMA: ${(player.salvoFireCooldown / 60).toFixed(1)}s`, '#f43f5e');
+                return;
+            }
 
-            if (side === 'left') player.leftMissiles--;
-            if (side === 'right') player.rightMissiles--;
+            if (side === 'left') {
+                if (player.leftFireCooldown > 0) {
+                    if (!isSalvoCall) addFloatingText(player.x - 50, player.y - 40, `⏳ SOL PİLON: ${(player.leftFireCooldown / 60).toFixed(1)}s`, '#38bdf8');
+                    return;
+                }
+                if (player.leftMissiles <= 0) return;
+                player.leftMissiles--;
+                player.leftFireCooldown = currentDifficulty.pylonCooldownFrames;
+            }
+
+            if (side === 'right') {
+                if (player.rightFireCooldown > 0) {
+                    if (!isSalvoCall) addFloatingText(player.x + 50, player.y - 40, `⏳ SAĞ PİLON: ${(player.rightFireCooldown / 60).toFixed(1)}s`, '#38bdf8');
+                    return;
+                }
+                if (player.rightMissiles <= 0) return;
+                player.rightMissiles--;
+                player.rightFireCooldown = currentDifficulty.pylonCooldownFrames;
+            }
 
             // Nişangaha yakın olan tüm düşman hedeflerini mesafeye göre sırala (Farklı hedeflere dağıtmak için)
             const sortedTargetCandidates = [...targets].sort((a, b) => {
@@ -2254,11 +2302,31 @@
                     age: -s * 3, // Çok kısa kademeli ateşleme gecikmesi (gerçekçi salvo hissi)
                     scale: 0.92,
                     trail: [],
-                    damage: player.damage * 1.65
+                    damage: player.damage * currentDifficulty.playerMissileMult
                 });
             }
 
             playSound('missile');
+            updateHUD();
+        }
+
+        function fireDoubleSalvo() {
+            if (gameState !== 'PLAYING' || !player) return;
+            if (player.salvoFireCooldown > 0) {
+                addFloatingText(player.x, player.y - 55, `⏳ ÇİFT SALVO BEKLEME: ${(player.salvoFireCooldown / 60).toFixed(1)}s`, '#f43f5e');
+                playSound('warningBeep');
+                return;
+            }
+            if (player.leftMissiles <= 0 && player.rightMissiles <= 0) {
+                addFloatingText(player.x, player.y - 55, `⚠ ROKET PİLONLARI BOŞ!`, '#fbbf24');
+                playSound('warningBeep');
+                return;
+            }
+            player.leftFireCooldown = 0;
+            player.rightFireCooldown = 0;
+            fireWingMissile('left', true);
+            fireWingMissile('right', true);
+            player.salvoFireCooldown = currentDifficulty.salvoCooldownFrames;
             updateHUD();
         }
 
@@ -2473,13 +2541,26 @@
                 killEl.innerText = String(kills).padStart(2, '0');
             }
 
-            document.getElementById('leftMissileCount').innerText = `${player.leftMissiles}/${player.maxLeftMissiles}`;
-            const leftPct = player.leftMissiles === player.maxLeftMissiles ? 100 : (player.leftRecharge / 130) * 100;
+            const rechMax = currentDifficulty.missileRechargeFrames;
+            document.getElementById('leftMissileCount').innerText = player.leftFireCooldown > 0
+                ? `${(player.leftFireCooldown / 60).toFixed(1)}s`
+                : `${player.leftMissiles}/${player.maxLeftMissiles}`;
+            const leftPct = player.leftMissiles === player.maxLeftMissiles ? 100 : (player.leftRecharge / rechMax) * 100;
             document.getElementById('leftMissileBar').style.width = `${leftPct}%`;
 
-            document.getElementById('rightMissileCount').innerText = `${player.rightMissiles}/${player.maxRightMissiles}`;
-            const rightPct = player.rightMissiles === player.maxRightMissiles ? 100 : (player.rightRecharge / 130) * 100;
+            document.getElementById('rightMissileCount').innerText = player.rightFireCooldown > 0
+                ? `${(player.rightFireCooldown / 60).toFixed(1)}s`
+                : `${player.rightMissiles}/${player.maxRightMissiles}`;
+            const rightPct = player.rightMissiles === player.maxRightMissiles ? 100 : (player.rightRecharge / rechMax) * 100;
             document.getElementById('rightMissileBar').style.width = `${rightPct}%`;
+
+            // Alt dokunmatik/ekran butonlarında bekleme süresi görseli
+            const btnL = document.getElementById('btnFireLeftMissile');
+            const btnR = document.getElementById('btnFireRightMissile');
+            const btnS = document.getElementById('btnFireBothMissiles');
+            if (btnL) btnL.style.opacity = (player.leftFireCooldown > 0 || player.leftMissiles <= 0) ? '0.45' : '1';
+            if (btnR) btnR.style.opacity = (player.rightFireCooldown > 0 || player.rightMissiles <= 0) ? '0.45' : '1';
+            if (btnS) btnS.style.opacity = (player.salvoFireCooldown > 0 || (player.leftMissiles <= 0 && player.rightMissiles <= 0)) ? '0.45' : '1';
 
             // DÜZELTME 5: Askeri Kritik Seviye Uyarı Sistemi (HULL, SHIELD, FUEL %30'un altına düştüğünde yanıp sönen alarm ve sesli ikaz)
             const hpRatio = player.hp / player.maxHp;
@@ -2599,25 +2680,31 @@
                 }
             }
 
-            // 4. Yakıt Tüketimi
-            player.fuel -= 1 / 60;
+            // 4. Zorluğa Göre Yakıt Tüketimi (Turbo basılıyken ekstra yakıt harcar)
+            const boostFuelPenalty = player.afterburnerBoost > 0.2 ? 1.35 : 1.0;
+            player.fuel -= (1 / 60) * currentDifficulty.fuelBurnMult * boostFuelPenalty;
             if (player.fuel <= 0) {
                 player.fuel = 0;
                 triggerGameOver('JP-8 Jet yakıtınız tamamen tükendi! Bonus_Yakıt varillerini vurarak yakıt ikmali yapın.');
                 return;
             }
 
-            // 5. Kanat Roketi Dolumu
+            // 5. Zorluk Seviyesine Göre Kanat Roketi Dolumu ve Atış Cooldown Sayaçları
+            if (player.leftFireCooldown > 0) player.leftFireCooldown--;
+            if (player.rightFireCooldown > 0) player.rightFireCooldown--;
+            if (player.salvoFireCooldown > 0) player.salvoFireCooldown--;
+
+            const rechFrames = currentDifficulty.missileRechargeFrames + (waveNumber - 1) * 12;
             if (player.leftMissiles < player.maxLeftMissiles) {
                 player.leftRecharge++;
-                if (player.leftRecharge >= 130) {
+                if (player.leftRecharge >= rechFrames) {
                     player.leftMissiles++;
                     player.leftRecharge = 0;
                 }
             }
             if (player.rightMissiles < player.maxRightMissiles) {
                 player.rightRecharge++;
-                if (player.rightRecharge >= 130) {
+                if (player.rightRecharge >= rechFrames) {
                     player.rightMissiles++;
                     player.rightRecharge = 0;
                 }
@@ -2640,7 +2727,7 @@
             // 6. PROFESYONEL 20MM ÇİFT VULCAN TOPU ATIŞ SİSTEMİ
             if (player.gunCooldown > 0) player.gunCooldown--;
             if ((crosshair.firing || keys['Space']) && player.gunCooldown <= 0) {
-                const dmg = player.damage * (0.26 + (player.weaponLevel - 1) * 0.08);
+                const dmg = player.damage * (0.24 + (player.weaponLevel - 1) * 0.06) * currentDifficulty.playerGunMult;
                 const aimX = lockedTargetOnReticle
                     ? (lockedTargetOnReticle.x + camOffsetX * (0.18 + lockedTargetOnReticle.z * 0.35))
                     : crosshair.x;
@@ -2757,7 +2844,7 @@
 
             // Leveller ilerledikçe rastgele bonus çıkma süresi uzar (Bonuslar daha az gelir: Level 1'de ~300 kare, Level 9'da ~860 kare)
             bonusTimer++;
-            const dynamicBonusInterval = 290 + (waveNumber - 1) * 72;
+            const dynamicBonusInterval = currentDifficulty.bonusIntervalBase + (waveNumber - 1) * 85;
             if (bonusTimer >= dynamicBonusInterval) {
                 spawnBonus();
                 bonusTimer = 0;
@@ -2803,38 +2890,44 @@
                     if (t.y < 80) t.y = 80;
                     if (t.y > canvas.height * 0.62) t.y = canvas.height * 0.62;
 
-                    // Uçak bize tamamen yaklaştıysa (z >= 1.15) yüksek hızla yanımızdan geçip (Fly-by) yeni bir taarruz için ufka döner
+                    // Uçak vurulmadan kokpitimize kadar (z >= 1.15) sokulursa yakın geçiş (Fly-by) taarruz hasarı verir!
                     if (t.z >= 1.15) {
+                        if (currentDifficulty.id !== 'ROOKIE') {
+                            const passDmg = Math.round(12 * currentDifficulty.enemyDamageMult);
+                            applyDamageToPlayer(passDmg);
+                            addFloatingText(player.x, player.y - 90, `⚠ DÜŞMAN YAKIN TAARRUZ GEÇİŞİ!`, '#f43f5e');
+                        }
                         t.z = 0.15;
                         t.x = canvas.width * (0.18 + Math.random() * 0.64);
                         t.y = canvas.height * (0.16 + Math.random() * 0.22);
                     }
                 }
 
-                // Düşman uçağı belirli bir menzile girdiğinde oyuncuya doğru füze ateşler
+                // Düşman uçağı menzile girdiğinde zorluk seviyesine göre agresif ve yüksek hasarlı füze ateşler!
                 t.fireCooldown--;
-                if (t.fireCooldown <= 0 && t.z > 0.30 && t.z < 0.96) {
-                    const count = t.isBoss ? 2 : 1;
+                if (t.fireCooldown <= 0 && t.z > 0.26 && t.z < 0.96) {
+                    const count = t.isBoss ? (currentDifficulty.id === 'ACE' ? 3 : 2) : (currentDifficulty.id === 'ACE' && Math.random() < 0.45 ? 2 : 1);
                     const pf = 0.18 + t.z * 0.35;
                     const launchX = t.x + camOffsetX * pf;
                     const launchY = t.y + camOffsetY * pf;
+                    const levelDmgScale = 1 + (waveNumber - 1) * 0.08;
 
                     for (let c = 0; c < count; c++) {
                         incomingMissiles.push({
                             spriteName: t.missileId,
-                            startX: launchX + (c === 0 ? -18 : 18),
+                            startX: launchX + (c - (count - 1) / 2) * 24,
                             startY: launchY,
                             x: launchX,
                             y: launchY,
-                            aimX: player.x + (Math.random() - 0.5) * 36,
-                            aimY: player.y + (Math.random() - 0.5) * 28,
+                            aimX: player.x + (Math.random() - 0.5) * 28,
+                            aimY: player.y + (Math.random() - 0.5) * 22,
                             z: t.z * 0.25,
-                            speedZ: 0.0085 + Math.random() * 0.003,
-                            hp: 15,
-                            damage: t.isBoss ? 25 : 17
+                            speedZ: (0.0085 + Math.random() * 0.003) * currentDifficulty.enemyMissileSpeedMult,
+                            hp: Math.round(15 * currentDifficulty.enemyHpMult),
+                            damage: Math.round((t.isBoss ? 25 : 17) * currentDifficulty.enemyDamageMult * levelDmgScale)
                         });
                     }
-                    t.fireCooldown = t.fireRate;
+                    t.fireCooldown = Math.max(28, Math.round(t.fireRate * currentDifficulty.fireRateMult));
                 }
             }
 
@@ -2909,7 +3002,7 @@
 
         function checkPointHit(hx, hy, dmg, isAreaMissile) {
             // DÜZELTME 2: Roket patlamalarının birbirine yakın hedefleri de (zincirleme küme imhası) rahatça vurabilmesi için geniş patlama yarıçapı
-            const hitRadiusBonus = isAreaMissile ? 135 : 24;
+            const hitRadiusBonus = isAreaMissile ? currentDifficulty.missileSplashRadius : 24;
 
             // 1. Havada gelen füzeleri vurma
             for (let i = incomingMissiles.length - 1; i >= 0; i--) {
@@ -2972,7 +3065,7 @@
                         playSound('explosion');
 
                         // Leveller ilerledikçe vurulan düşmandan bonus düşme ihtimali azalır (Level 1: %35 -> Level 9: %10)
-                        const dropChance = Math.max(0.10, 0.36 - (waveNumber - 1) * 0.032);
+                        const dropChance = Math.max(0.06, (0.34 - (waveNumber - 1) * 0.032) * currentDifficulty.bonusDropMult);
                         if (t.isBoss || Math.random() < dropChance) {
                             spawnBonus(t.x, t.y);
                         }
@@ -3526,8 +3619,7 @@
             if (e.button === 0) {
                 crosshair.firing = true;
             } else if (e.button === 2) {
-                fireWingMissile('left');
-                fireWingMissile('right');
+                fireDoubleSalvo();
             }
         });
 
@@ -3561,8 +3653,7 @@
             if (e.code === 'KeyQ') fireWingMissile('left');
             if (e.code === 'KeyE') fireWingMissile('right');
             if (e.code === 'KeyX') {
-                fireWingMissile('left');
-                fireWingMissile('right');
+                fireDoubleSalvo();
             }
             if (e.code === 'Escape' && gameState === 'PLAYING') {
                 stopToMenu();
@@ -3591,8 +3682,7 @@
         bindTacticalButton('btnFireLeftMissile', () => fireWingMissile('left'));
         bindTacticalButton('btnFireRightMissile', () => fireWingMissile('right'));
         bindTacticalButton('btnFireBothMissiles', () => {
-            fireWingMissile('left');
-            fireWingMissile('right');
+            fireDoubleSalvo();
         });
 
         // Tablet ve Telefonlar İçin W Tuşu Süpersonik Turbo (Afterburner) Dokunmatik Tuş Bağlantısı
