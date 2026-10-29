@@ -190,62 +190,87 @@
         <!-- OYUN KANVASI (Gerçek 3D Derinlikli Yaklaşan Uçaklar, Aerodinamik Avcı Uçağı ve Balistik Mermiler) -->
         <canvas id="gameCanvas" class="absolute inset-0 z-0"></canvas>
 
-        <!-- 1. ANA MENÜ EKRANI (AAA MODERN OYUN HANGARI, AIR LOGO SANAT SANCAĞI & 9 HARİTA KOMUTA MERKEZİ) -->
-        <div id="menuScreen" class="relative z-10 w-full h-full max-w-[1640px] mx-auto p-2.5 sm:p-4 flex flex-col lg:flex-row gap-4 overflow-y-auto custom-scroll">
+        <!-- 1. ANA MENÜ EKRANI (3 SÜTUNLU AAA KOMUTA MERKEZİ: SOLDA TAM BOY DİKEY AIR LOGO POSTERİ | ORTADA AVCI HANGARI | SAĞDA 9 OPERASYON HARİTASI) -->
+        <div id="menuScreen" class="relative z-10 w-full h-full max-w-[1720px] mx-auto p-2 sm:p-3.5 grid grid-cols-1 lg:grid-cols-12 gap-3.5 overflow-y-auto lg:overflow-hidden custom-scroll">
             
-            <!-- SOL: AAA AVCI UÇAĞI HANGARI + AIR LOGO KOMUTA KARTI + HOLOGRAFİK DÖNER PLATFORM -->
-            <div class="lg:w-[54%] aaa-panel rounded-2xl p-3.5 sm:p-4 flex flex-col backdrop-blur-xl">
-                
-                <!-- Hangar Üst Başlık Şeridi -->
-                <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2 mb-3">
-                    <div class="flex items-center space-x-2.5">
-                        <span class="w-2 h-5 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-sm"></span>
-                        <div>
-                            <h2 class="font-orbitron text-sm sm:text-base font-black text-cyan-300 tracking-widest hud-glow-text">01 // AVCI UÇAĞI HANGARI & PİLOT KABİNİ</h2>
-                            <p class="text-[11px] text-slate-300">Savaşa katılacağınız avcı uçağını ve kanat pilon mühimmatını seçin</p>
-                        </div>
-                    </div>
+            <!-- 1. SÜTUN (SOL - 3 BİRİM): TAM BOY DİKEY "AIR LOGO.JPG" KAHRAMAN PİLOT POSTERİ & AKTİF SORTİ KARTI (HİÇ KESİLMEDEN %100 GÖRÜNÜR) -->
+            <div class="lg:col-span-3 aaa-panel rounded-2xl p-3 flex flex-col justify-between backdrop-blur-xl h-full overflow-hidden">
+                <!-- Üst Sancak Başlığı -->
+                <div class="flex items-center justify-between border-b border-amber-400/30 pb-2 mb-2.5 shrink-0">
                     <div class="flex items-center space-x-2">
-                        <span class="text-[10px] font-mono text-slate-400 hidden sm:inline">ACTIVE JET:</span>
-                        <span id="selectedPlaneBadge" class="bg-cyan-500/20 text-cyan-200 border border-cyan-400/70 px-3 py-1 rounded-lg text-xs font-orbitron font-bold shadow">Avcı_Kaan</span>
+                        <span class="w-2 h-4 bg-gradient-to-b from-amber-400 to-rose-600 rounded-sm"></span>
+                        <span class="font-orbitron text-xs font-black text-amber-300 tracking-widest">TÜRK HAVA KOMUTANLIĞI</span>
                     </div>
+                    <span class="bg-rose-600/90 border border-rose-300/60 text-white text-[9px] font-orbitron font-black px-2 py-0.5 rounded shadow">★ TURKISH ACE</span>
                 </div>
 
-                <!-- ÜST VİTRİN: SOLDA "AIR LOGO.JPG" PİLOT SANCAĞI + ORTADA HOLOGRAFİK UÇAK PLATFORMU + SAĞDA TELEMETRİ -->
-                <div class="hangar-showcase-bg border border-cyan-500/40 rounded-xl p-3 mb-3 grid grid-cols-1 md:grid-cols-12 gap-3.5 items-center relative overflow-hidden shadow-2xl">
-                    <!-- Holografik Tarama Çizgisi -->
-                    <div class="absolute inset-x-0 h-6 bg-gradient-to-b from-cyan-400/10 to-transparent holo-scanline pointer-events-none"></div>
+                <!-- ORTA: TAM BOY DİKEY AIR LOGO.JPG VİTRİNİ (Kesilmeden Tam Görünüm + Kendi Tonunda Bulanık Arka Plan) -->
+                <div class="relative flex-1 min-h-[290px] rounded-xl border-2 border-amber-400/70 bg-slate-950 overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.18)] group flex items-center justify-center">
+                    <!-- Arka Plan Atmosferik Yansıma -->
+                    <img id="hangarHeroLogoBgBlur" src="./Air%20Logo.jpg" alt="" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-35 scale-110 pointer-events-none">
+                    
+                    <!-- Ön Plan: KESİLMEYEN TAM BOY DİKEY AIR LOGO.JPG -->
+                    <img id="hangarHeroLogoImg" src="./Air%20Logo.jpg" alt="AIR GUN Tactical Flight Simulator Logo" class="relative z-10 w-full h-full object-contain transition duration-500 group-hover:scale-[1.03]" onerror="this.style.display='none'; document.getElementById('hangarLogoFallback').classList.remove('hidden');">
 
-                    <!-- 1. SÜTUN (3 BİRİM): AIR LOGO.JPG KAHRAMAN PİLOT SANCAĞI VİTRİNİ -->
-                    <div class="md:col-span-3 h-44 sm:h-48 rounded-xl border-2 border-amber-400/70 bg-slate-950 relative overflow-hidden shadow-2xl group flex items-center justify-center">
-                        <!-- Air Logo.jpg Görseli -->
-                        <img id="hangarHeroLogoImg" src="./Air%20Logo.jpg" alt="AIR GUN Tactical Flight Simulator Logo" class="w-full h-full object-cover object-center transition duration-500 group-hover:scale-105" onerror="this.style.display='none'; document.getElementById('hangarLogoFallback').classList.remove('hidden');">
-                        <!-- Görsel henüz yüklenmediyse gösterilecek şık askeri arma yedeği -->
-                        <div id="hangarLogoFallback" class="hidden absolute inset-0 bg-gradient-to-b from-slate-900 via-slate-950 to-rose-950/60 flex flex-col items-center justify-center p-2 text-center">
-                            <div class="w-12 h-12 rounded-full border-2 border-amber-400 flex items-center justify-center text-2xl mb-1 shadow-lg">🦅</div>
-                            <div class="font-orbitron text-xs font-black text-amber-300 tracking-wider">AIR GUN</div>
-                            <div class="text-[8px] font-mono text-cyan-300">TACTICAL SIMULATOR</div>
-                        </div>
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-slate-950/20 pointer-events-none"></div>
-                        <div class="absolute top-1.5 left-1.5 bg-rose-600/90 border border-rose-300/60 text-white text-[8px] font-orbitron font-black px-1.5 py-0.5 rounded shadow">
-                            ★ TURKISH ACE
-                        </div>
-                        <div class="absolute bottom-1.5 inset-x-1.5 text-center bg-slate-950/85 border border-amber-400/50 rounded py-0.5 px-1 backdrop-blur-sm">
-                            <div class="font-orbitron text-[9px] font-black text-amber-300 tracking-wider">AIR GUN FILOSU</div>
-                        </div>
+                    <!-- Görsel henüz yüklenmediyse gösterilecek şık askeri arma yedeği -->
+                    <div id="hangarLogoFallback" class="hidden absolute inset-0 z-20 bg-gradient-to-b from-slate-900 via-slate-950 to-rose-950/60 flex flex-col items-center justify-center p-4 text-center">
+                        <div class="w-16 h-16 rounded-full border-2 border-amber-400 flex items-center justify-center text-3xl mb-2 shadow-lg">🦅</div>
+                        <div class="font-orbitron text-base font-black text-amber-300 tracking-wider">AIR GUN</div>
+                        <div class="text-[10px] font-mono text-cyan-300 mt-1">TACTICAL FLIGHT SIMULATOR</div>
                     </div>
 
-                    <!-- 2. SÜTUN (4 BİRİM): CANLI RADAR HALKALI BÜYÜK UÇAK GÖSTERİM PLATFORMU -->
-                    <div class="md:col-span-4 h-44 sm:h-48 rounded-xl border border-cyan-400/50 bg-slate-950/80 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl">
-                        <!-- Arka Plan Taktiksel Izgara & Dönen Radar Halkası -->
+                    <!-- Köşe Altın Süslemeleri -->
+                    <div class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-amber-300 z-20 pointer-events-none"></div>
+                    <div class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-amber-300 z-20 pointer-events-none"></div>
+                    <div class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-amber-300 z-20 pointer-events-none"></div>
+                    <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-300 z-20 pointer-events-none"></div>
+                </div>
+
+                <!-- ALT: SEÇİLİ SORTİ BRİFİNG ÖZETİ (UÇAK + HARİTA) -->
+                <div class="mt-2.5 bg-slate-950/90 border border-cyan-500/35 rounded-xl p-2.5 shrink-0 space-y-1.5">
+                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 border-b border-slate-800 pb-1">
+                        <span>SORTİ GÖREV ÖZETİ //</span>
+                        <span class="text-emerald-400 font-bold">● SİSTEM HAZIR</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-400 font-semibold">SEÇİLİ AVCI:</span>
+                        <span id="selectedPlaneBadge" class="font-orbitron font-black text-cyan-300 bg-cyan-500/15 border border-cyan-400/50 px-2 py-0.5 rounded">Avcı_Kaan</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-400 font-semibold">OPERASYON BÖLGESİ:</span>
+                        <span id="selectedMapBadge" class="font-orbitron font-black text-amber-300 bg-amber-500/15 border border-amber-400/50 px-2 py-0.5 rounded">Dunya_Okyanus</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. SÜTUN (ORTA - 5 BİRİM): GENİŞ HOLOGRAFİK AVCI UÇAĞI VİTRİNİ & 10 UÇAK SEÇİM HANGARI -->
+            <div class="lg:col-span-5 aaa-panel rounded-2xl p-3.5 flex flex-col backdrop-blur-xl h-full overflow-hidden">
+                <!-- Hangar Üst Başlık Şeridi -->
+                <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2 mb-2.5 shrink-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-5 bg-gradient-to-b from-cyan-400 to-blue-600 rounded-sm"></span>
+                        <div>
+                            <h2 class="font-orbitron text-sm sm:text-base font-black text-cyan-300 tracking-widest hud-glow-text">01 // AVCI UÇAĞI HANGARI</h2>
+                            <p class="text-[11px] text-slate-300">Aerodinamik avcı uçağınızı ve kanat pilon mühimmatını seçin</p>
+                        </div>
+                    </div>
+                    <span class="bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 text-[10px] font-orbitron font-bold px-2.5 py-1 rounded-lg">10 FİLO UÇAĞI</span>
+                </div>
+
+                <!-- ÜST VİTRİN: GENİŞ HOLOGRAFİK DÖNER RADAR PLATFORMU + DETAYLI TEKNİK BARLAR -->
+                <div class="hangar-showcase-bg border border-cyan-500/45 rounded-xl p-3 mb-3 flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden shadow-2xl shrink-0">
+                    <div class="absolute inset-x-0 h-6 bg-gradient-to-b from-cyan-400/10 to-transparent holo-scanline pointer-events-none"></div>
+
+                    <!-- Büyük Holografik Uçak Platformu -->
+                    <div class="w-48 h-40 sm:w-52 sm:h-44 rounded-xl border border-cyan-400/50 bg-slate-950/85 flex flex-col items-center justify-center relative shrink-0 overflow-hidden shadow-2xl">
                         <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(#38bdf8 1px, transparent 1px); background-size: 12px 12px;"></div>
-                        <div class="w-36 h-36 rounded-full border border-dashed border-cyan-400/40 absolute radar-sweep-ring pointer-events-none"></div>
-                        <div class="w-28 h-28 rounded-full border border-cyan-500/20 absolute pointer-events-none"></div>
+                        <div class="w-36 h-36 rounded-full border border-dashed border-cyan-400/45 absolute radar-sweep-ring pointer-events-none"></div>
+                        <div class="w-28 h-28 rounded-full border border-cyan-500/25 absolute pointer-events-none"></div>
 
                         <canvas id="previewPlaneCanvas" width="210" height="175" class="relative z-10"></canvas>
 
                         <div class="absolute top-1.5 right-1.5 bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-[8px] font-mono font-bold px-1.5 py-0.5 rounded">
-                            ● COMBAT READY
+                            ● ARMED
                         </div>
                         <div class="absolute bottom-1.5 inset-x-2 flex justify-between items-center px-2 py-0.5 rounded bg-slate-950/90 border border-cyan-500/40 text-[9px] font-mono text-cyan-300 z-20">
                             <span id="previewSpriteName">Avcı_Kaan</span>
@@ -253,8 +278,8 @@
                         </div>
                     </div>
 
-                    <!-- 3. SÜTUN (5 BİRİM): SEÇİLİ AVCI UÇAĞININ TEKNİK AVİYONİK TELEMETRİSİ -->
-                    <div class="md:col-span-5 w-full space-y-2">
+                    <!-- Seçili Avcı Uçağının Performans Telemetrisi -->
+                    <div class="flex-1 w-full space-y-2">
                         <div class="border-b border-slate-800 pb-1.5">
                             <div class="flex items-center justify-between">
                                 <span class="text-[9px] font-mono text-cyan-400 tracking-widest">CLASSIFIED SPEC //</span>
@@ -293,49 +318,49 @@
                     </div>
                 </div>
 
-                <!-- ALT 10 AVCI UÇAĞI SEÇİM KARTLARI -->
+                <!-- ALT 10 AVCI UÇAĞI SEÇİM KARTLARI (Büyük ve Ferah Görünüm) -->
                 <div id="planeGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2 overflow-y-auto custom-scroll pr-1 flex-1"></div>
             </div>
 
-            <!-- SAĞ: 9 OPERASYON HARİTASI KOMUTA MERKEZİ & SORTİ BAŞLATMA -->
-            <div class="lg:w-[46%] aaa-panel rounded-2xl p-3.5 sm:p-4 flex flex-col backdrop-blur-xl">
-                <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2 mb-3">
-                    <div class="flex items-center space-x-2.5">
+            <!-- 3. SÜTUN (SAĞ - 4 BİRİM): 9 OPERASYON HARİTASI KOMUTA MERKEZİ & SORTİ BAŞLATMA -->
+            <div class="lg:col-span-4 aaa-panel rounded-2xl p-3.5 flex flex-col backdrop-blur-xl h-full overflow-hidden">
+                <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2 mb-2.5 shrink-0">
+                    <div class="flex items-center space-x-2">
                         <span class="w-2 h-5 bg-gradient-to-b from-amber-400 to-rose-600 rounded-sm"></span>
                         <div>
-                            <h2 class="font-orbitron text-sm sm:text-base font-black text-amber-400 tracking-widest">02 // OPERASYON HARİTASI (9 CEBHE)</h2>
+                            <h2 class="font-orbitron text-sm sm:text-base font-black text-amber-400 tracking-widest">02 // OPERASYON CEPHESİ</h2>
                             <p class="text-[11px] text-slate-300">3 Uzay İstilası ve 6 Dünya Hava Muharebesi Bölgesi</p>
                         </div>
                     </div>
-                    <span id="selectedMapBadge" class="bg-amber-500/20 text-amber-300 border border-amber-400/70 px-3 py-1 rounded-lg text-xs font-orbitron font-bold shadow">Dunya_Okyanus</span>
+                    <span class="bg-amber-500/15 border border-amber-400/50 text-amber-300 text-[10px] font-orbitron font-bold px-2.5 py-1 rounded-lg">9 HARİTA</span>
                 </div>
 
                 <!-- 9 Harita Seçim Izgarası -->
-                <div id="mapGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-3 overflow-y-auto custom-scroll pr-1 flex-1"></div>
+                <div id="mapGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2.5 overflow-y-auto custom-scroll pr-1 flex-1"></div>
 
                 <!-- Alt Kontroller ve Gösterişli Sorti Başlat Butonu -->
-                <div class="mt-auto bg-slate-950/95 border border-cyan-500/30 rounded-xl p-3 flex flex-col gap-2.5 shadow-inner">
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-slate-300">
-                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800/90 flex flex-col">
-                            <span class="text-cyan-400 font-bold font-orbitron text-[9px] tracking-wider">⚡ W / YUKARI OK</span>
-                            <span class="text-[10px] text-slate-300 mt-0.5">Süpersonik Art Yakıcı</span>
+                <div class="mt-auto bg-slate-950/95 border border-cyan-500/30 rounded-xl p-2.5 flex flex-col gap-2 shadow-inner shrink-0">
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] text-slate-300">
+                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800/90 flex flex-col">
+                            <span class="text-cyan-400 font-bold font-orbitron text-[8px] tracking-wider">⚡ W / YUKARI</span>
+                            <span class="text-[9px] text-slate-300">Süpersonik Turbo</span>
                         </div>
-                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800/90 flex flex-col">
-                            <span class="text-rose-400 font-bold font-orbitron text-[9px] tracking-wider">🔥 SOL TIK / DOKUN</span>
-                            <span class="text-[10px] text-slate-300 mt-0.5">20mm Çift Vulcan Topu</span>
+                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800/90 flex flex-col">
+                            <span class="text-rose-400 font-bold font-orbitron text-[8px] tracking-wider">🔥 SOL TIK</span>
+                            <span class="text-[9px] text-slate-300">20mm Çift Vulcan</span>
                         </div>
-                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800/90 flex flex-col">
-                            <span class="text-amber-400 font-bold font-orbitron text-[9px] tracking-wider">🚀 Q / E / ROKET</span>
-                            <span class="text-[10px] text-slate-300 mt-0.5">3'lü Sürü Kanat Roketi</span>
+                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800/90 flex flex-col">
+                            <span class="text-amber-400 font-bold font-orbitron text-[8px] tracking-wider">🚀 Q / E TUŞU</span>
+                            <span class="text-[9px] text-slate-300">3'lü Sürü Roketi</span>
                         </div>
-                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800/90 flex flex-col">
-                            <span class="text-emerald-400 font-bold font-orbitron text-[9px] tracking-wider">💥 SAĞ TIK / SALVO</span>
-                            <span class="text-[10px] text-slate-300 mt-0.5">6'lı Güdümlü Küme İmha</span>
+                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800/90 flex flex-col">
+                            <span class="text-emerald-400 font-bold font-orbitron text-[8px] tracking-wider">💥 SAĞ TIK</span>
+                            <span class="text-[9px] text-slate-300">6'lı Küme Salvo</span>
                         </div>
                     </div>
 
-                    <button id="btnStartGame" class="w-full py-3.5 sortie-launch-btn text-white font-orbitron font-black text-base sm:text-lg tracking-[0.18em] rounded-xl border border-cyan-300/80 transition transform active:scale-[0.99] flex items-center justify-center space-x-3">
-                        <span>✈️ SAVAŞ SORTİSİNİ BAŞLAT // SCRAMBLE LAUNCH</span>
+                    <button id="btnStartGame" class="w-full py-3.5 sortie-launch-btn text-white font-orbitron font-black text-sm sm:text-base tracking-[0.16em] rounded-xl border border-cyan-300/80 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
+                        <span>✈️ SAVAŞ SORTİSİNİ BAŞLAT // SCRAMBLE</span>
                     </button>
                 </div>
             </div>
@@ -906,6 +931,7 @@
         function syncBrandingLogoAndFavicon(baseUrl = "./") {
             const cleanBase = normalizeGithubUrl(baseUrl || "./");
             const heroLogoImg = document.getElementById('hangarHeroLogoImg');
+            const heroLogoBgBlur = document.getElementById('hangarHeroLogoBgBlur');
             const headerFavImg = document.getElementById('headerFaviconImg');
             const favLink = document.getElementById('dynamicFavicon');
             const shortFavLink = document.getElementById('dynamicShortcutIcon');
@@ -918,6 +944,7 @@
                     if (heroLogoImg) {
                         heroLogoImg.src = testLogo.src;
                         heroLogoImg.style.display = 'block';
+                        if (heroLogoBgBlur) heroLogoBgBlur.src = testLogo.src;
                         const fb = document.getElementById('hangarLogoFallback');
                         if (fb) fb.classList.add('hidden');
                     }
