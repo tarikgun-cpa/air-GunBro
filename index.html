@@ -79,6 +79,21 @@
             box-shadow: 0 0 18px rgba(255, 42, 85, 0.35), inset 0 0 10px rgba(255, 42, 85, 0.2);
             touch-action: manipulation;
         }
+        /* Askeri Kritik Uyarı Animasyonları (HULL / SHIELD / FUEL) */
+        @keyframes criticalBlink {
+            0%, 100% { opacity: 1; border-color: rgba(255, 42, 85, 0.95); box-shadow: 0 0 14px rgba(255, 42, 85, 0.7), inset 0 0 8px rgba(255, 42, 85, 0.4); }
+            50% { opacity: 0.45; border-color: rgba(255, 42, 85, 0.2); box-shadow: none; }
+        }
+        .critical-bar-alert {
+            animation: criticalBlink 0.55s infinite ease-in-out;
+        }
+        .master-caution-banner {
+            background: linear-gradient(90deg, rgba(225, 29, 72, 0) 0%, rgba(225, 29, 72, 0.85) 20%, rgba(159, 18, 57, 0.92) 50%, rgba(225, 29, 72, 0.85) 80%, rgba(225, 29, 72, 0) 100%);
+            border-top: 1px solid rgba(255, 180, 190, 0.85);
+            border-bottom: 1px solid rgba(255, 180, 190, 0.85);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+            animation: criticalBlink 0.6s infinite;
+        }
         /* Hangar vitrin efektleri */
         .hangar-card {
             background: linear-gradient(160deg, rgba(15, 23, 42, 0.85) 0%, rgba(2, 6, 23, 0.95) 100%);
@@ -237,8 +252,8 @@
 
                     <div class="space-y-1">
                         <!-- HULL -->
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-9 text-[9px] font-orbitron font-bold text-emerald-400">HULL</span>
+                        <div id="hullRowContainer" class="flex items-center gap-1.5 px-1 py-0.5 rounded transition-all">
+                            <span id="hullLabel" class="w-9 text-[9px] font-orbitron font-bold text-emerald-400">HULL</span>
                             <div class="flex-1 h-1.5 bg-slate-950/90 border border-emerald-500/40 relative overflow-hidden rounded-sm">
                                 <div id="hudHpBar" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-300" style="width:100%"></div>
                                 <div class="absolute inset-0 hud-segment-bar"></div>
@@ -246,8 +261,8 @@
                             <span id="hudHpText" class="w-9 text-right text-[9px] font-mono text-emerald-300">200</span>
                         </div>
                         <!-- SHIELD -->
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-9 text-[9px] font-orbitron font-bold text-cyan-300">SHLD</span>
+                        <div id="shieldRowContainer" class="flex items-center gap-1.5 px-1 py-0.5 rounded transition-all">
+                            <span id="shieldLabel" class="w-9 text-[9px] font-orbitron font-bold text-cyan-300">SHLD</span>
                             <div class="flex-1 h-1.5 bg-slate-950/90 border border-cyan-500/40 relative overflow-hidden rounded-sm">
                                 <div id="hudShieldBar" class="h-full bg-gradient-to-r from-blue-600 to-cyan-300" style="width:100%"></div>
                                 <div class="absolute inset-0 hud-segment-bar"></div>
@@ -255,8 +270,8 @@
                             <span id="hudShieldText" class="w-9 text-right text-[9px] font-mono text-cyan-200">180</span>
                         </div>
                         <!-- FUEL -->
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-9 text-[9px] font-orbitron font-bold text-amber-400">FUEL</span>
+                        <div id="fuelRowContainer" class="flex items-center gap-1.5 px-1 py-0.5 rounded transition-all">
+                            <span id="fuelLabel" class="w-9 text-[9px] font-orbitron font-bold text-amber-400">FUEL</span>
                             <div class="flex-1 h-1.5 bg-slate-950/90 border border-amber-500/40 relative overflow-hidden rounded-sm">
                                 <div id="hudFuelBar" class="h-full bg-gradient-to-r from-rose-500 via-amber-400 to-yellow-300" style="width:100%"></div>
                                 <div class="absolute inset-0 hud-segment-bar"></div>
@@ -266,7 +281,7 @@
                     </div>
                 </div>
 
-                <!-- ORTA KOKPİT VİZÖRÜ: PUSULA, SKOR, DALGA VE BOSS BARI -->
+                <!-- ORTA KOKPİT VİZÖRÜ: PUSULA, SKOR, DALGA, BOSS BARI VE ASKERİ KRİTİK UYARI (MASTER CAUTION) -->
                 <div class="flex flex-col items-center">
                     <div class="hud-center-visor px-4 sm:px-7 py-1 text-center min-w-[180px] sm:min-w-[260px]">
                         <div class="flex items-center justify-center space-x-2 text-[8px] sm:text-[9px] font-mono text-cyan-300/80 tracking-widest">
@@ -277,6 +292,11 @@
                             <span>KILL <strong id="hudKillVal" class="text-emerald-300">00</strong></span>
                         </div>
                         <div id="hudScore" class="font-orbitron text-lg sm:text-2xl font-black text-cyan-100 tracking-[0.16em] hud-glow-text leading-tight">000000</div>
+                    </div>
+
+                    <!-- ASKERİ MASTER CAUTION / BINGO FUEL / HULL CRITICAL UYARI ŞERİDİ -->
+                    <div id="hudMasterCaution" class="hidden mt-1 px-6 py-0.5 master-caution-banner font-orbitron text-[10px] sm:text-xs font-black tracking-[0.2em] text-white uppercase">
+                        ⚠ MASTER CAUTION // HULL CRITICAL
                     </div>
 
                     <!-- Kompakt Boss Zırh Barı -->
@@ -926,6 +946,30 @@
                     gain.gain.linearRampToValueAtTime(0.01, now + 0.24);
                     osc.start(now);
                     osc.stop(now + 0.24);
+                } else if (type === 'afterburner') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(85, now);
+                    osc.frequency.exponentialRampToValueAtTime(210, now + 0.18);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
+                } else if (type === 'sparkHit') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(920, now);
+                    osc.frequency.exponentialRampToValueAtTime(70, now + 0.22);
+                    gain.gain.setValueAtTime(0.24, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'warningBeep') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.setValueAtTime(660, now + 0.09);
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.linearRampToValueAtTime(0.005, now + 0.18);
+                    osc.start(now);
+                    osc.stop(now + 0.18);
                 }
             } catch (e) {}
         }
@@ -945,39 +989,59 @@
 
         /**
          * OYUNCUNUN AVCI UÇAĞI ÇİZİMİ:
-         * Mouse imlecine yapıştırılmış bir fotoğraf gibi durmaması için:
+         * - W Tuşu Süpersonik Art Yakıcı (Afterburner Mach Cone & Shockwave Ring) animasyonu,
          * - 3D Yatış (Roll Bank Angle), Yunuslama (Pitch) perspektif sıkıştırması,
-         * - Dinamik çift art yakıcı (Afterburner Shock Diamonds) jet motoru alevi,
-         * - Keskin dönüşlerde kanat uçlarından çıkan aerodinamik buhar izi (Wingtip Vortices),
          * - Ateş ederken namlu flaşı (Muzzle Flash) ve gövde geri tepme (Recoil) titreşimi içerir.
          */
-        function drawFighterSpriteOrVector(ctx, plane, x, y, w, h, rollAngle = 0, pitchFactor = 0, isInGame = false, isFiring = false) {
+        function drawFighterSpriteOrVector(ctx, plane, x, y, w, h, rollAngle = 0, pitchFactor = 0, isInGame = false, isFiring = false, boostLevel = 0) {
             const customImg = getSprite(plane.id);
             ctx.save();
 
-            // Ateş ederken hafif mekanik geri tepme (Recoil) ve yüksek hız türbülansı
             const recoilY = isFiring ? (Math.random() * 2.8) : 0;
-            const hoverBob = isInGame ? Math.sin(performance.now() * 0.008) * 2.2 : 0;
+            const hoverBob = isInGame ? Math.sin(performance.now() * 0.008) * 2.0 : 0;
             ctx.translate(x, y + recoilY + hoverBob);
 
-            // Gerçekçi 3D Yatış (Roll) ve Perspektif Sıkıştırması (Sağa/sola yatarken kanat genişliği perspektifle daralır)
+            // W Tuşu Süpersonik İtki (Boost) sırasında uçağın ileri atılma ölçeklemesi
+            const boostScale = 1 + boostLevel * 0.11;
             ctx.rotate(rollAngle);
             const bankCos = Math.max(0.74, Math.cos(rollAngle * 1.15));
-            const pitchScale = 1 - pitchFactor * 0.08;
-            ctx.scale(bankCos, pitchScale);
+            const pitchScale = (1 - pitchFactor * 0.06) * boostScale;
+            ctx.scale(bankCos * boostScale, pitchScale);
 
             let actualW = w;
             let actualH = h;
 
-            // Alt irtifa dinamik gölgesi (uçağa hacim katar)
             if (isInGame) {
                 ctx.save();
-                ctx.translate(-rollAngle * 28, 34);
+                ctx.translate(-rollAngle * 28, 34 + boostLevel * 12);
                 ctx.scale(0.82, 0.45);
                 ctx.fillStyle = 'rgba(2, 6, 23, 0.38)';
                 ctx.beginPath();
                 ctx.ellipse(0, 0, w * 0.38, h * 0.35, 0, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.restore();
+            }
+
+            // W TUŞU SÜPERSONİK SONİK PATLAMA KONİSİ (VAPOR CONE / MACH RING)
+            if (isInGame && boostLevel > 0.15) {
+                ctx.save();
+                const coneAlpha = boostLevel * 0.55;
+                const coneGrad = ctx.createRadialGradient(0, -h * 0.05, w * 0.1, 0, h * 0.1, w * 0.58);
+                coneGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                coneGrad.addColorStop(0.55, `rgba(186, 230, 253, ${coneAlpha * 0.65})`);
+                coneGrad.addColorStop(0.8, `rgba(56, 189, 248, ${coneAlpha})`);
+                coneGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                ctx.fillStyle = coneGrad;
+                ctx.beginPath();
+                ctx.ellipse(0, h * 0.06, w * (0.48 + boostLevel * 0.16), h * 0.22, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Burun Şok Dalgası (Bow Shockwave)
+                ctx.strokeStyle = `rgba(125, 211, 252, ${coneAlpha * 0.9})`;
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.arc(0, -h * 0.08, w * 0.44, Math.PI * 1.15, Math.PI * 1.85);
+                ctx.stroke();
                 ctx.restore();
             }
 
@@ -1025,30 +1089,31 @@
 
             // GERÇEKÇİ SÜPERSONİK ART YAKICI (AFTERBURNER SHOCK DIAMONDS) JET MOTORU ALEVİ
             if (isInGame) {
-                const thrustIntensity = Math.max(0.75, 1 - pitchFactor * 0.45) + (Math.random() * 0.22);
+                const thrustIntensity = Math.max(0.8, 1 + boostLevel * 1.35) + (Math.random() * 0.25);
                 const flameLen = (32 + Math.abs(rollAngle) * 18) * thrustIntensity;
                 const engineY = actualH * 0.36;
                 const engineOffsets = plane.wingType === 'flyingWing' ? [0] : [-actualW * 0.065, actualW * 0.065];
 
                 engineOffsets.forEach(ex => {
-                    // Dış Plazma Konisi
                     const outerGrad = ctx.createLinearGradient(ex, engineY - 4, ex, engineY + flameLen);
-                    outerGrad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-                    outerGrad.addColorStop(0.25, 'rgba(56, 189, 248, 0.88)');
-                    outerGrad.addColorStop(0.65, 'rgba(249, 115, 22, 0.65)');
+                    outerGrad.addColorStop(0, '#ffffff');
+                    outerGrad.addColorStop(0.25, boostLevel > 0.2 ? '#38bdf8' : 'rgba(56, 189, 248, 0.88)');
+                    outerGrad.addColorStop(0.60, boostLevel > 0.2 ? '#818cf8' : 'rgba(249, 115, 22, 0.72)');
                     outerGrad.addColorStop(1, 'rgba(249, 115, 22, 0)');
                     ctx.fillStyle = outerGrad;
                     ctx.beginPath();
-                    ctx.moveTo(ex - 8, engineY);
-                    ctx.quadraticCurveTo(ex, engineY + flameLen * 1.15, ex + 8, engineY);
+                    const nozzleW = 8 + boostLevel * 5;
+                    ctx.moveTo(ex - nozzleW, engineY);
+                    ctx.quadraticCurveTo(ex, engineY + flameLen * 1.2, ex + nozzleW, engineY);
                     ctx.closePath();
                     ctx.fill();
 
                     // İç Süpersonik Şok Elmasları (Mach Diamonds)
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-                    for (let d = 0; d < 3; d++) {
-                        const dy = engineY + 5 + d * (flameLen * 0.24);
-                        const dw = Math.max(1.5, 4.5 - d * 1.1);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    const diamondCount = boostLevel > 0.2 ? 5 : 3;
+                    for (let d = 0; d < diamondCount; d++) {
+                        const dy = engineY + 5 + d * (flameLen * (0.18));
+                        const dw = Math.max(1.5, (4.8 + boostLevel * 2) - d * 0.85);
                         ctx.beginPath();
                         ctx.ellipse(ex, dy, dw, dw * 1.6, 0, 0, Math.PI * 2);
                         ctx.fill();
@@ -1061,24 +1126,23 @@
 
         /**
          * 3D UZAKTAN YAKLAŞAN DÜŞMAN SAVAŞ ARACI ÇİZİMİ:
-         * Düşmanlar havada asılı duran sabit hedefler değildir; ufuktan (z=0.14) başlayıp
-         * bize doğru gerçek bir uçak/uzay aracı gibi süzülerek, yatarak (banking) ve büyüyerek yaklaşırlar.
+         * DÜZELTME 1: Boss ve düşmanlara ateş edildiğinde ekranın ortasında beyaz yarı saydam dikdörtgen kutu çıkmasına
+         * sebep olan `source-atop fillRect` kaldırıldı! Bunun yerine hedefin tam isabet aldığı noktada lokalize
+         * zırh kıvılcımları ve enerji dalgası (localized armor impact ring) çizilir.
          */
         function drawTargetSpriteOrVector(ctx, target, drawX, drawY, maxW, maxH, isLocked = false) {
             const customImg = getSprite(target.id);
             ctx.save();
             ctx.translate(drawX, drawY);
 
-            // Düşman uçağının dönüş yönüne göre gerçekçi kanat yatışı (Banking angle)
             const bankAngle = Math.max(-0.42, Math.min(0.42, (target.vx || 0) * 0.085));
             ctx.rotate(bankAngle);
-            // Yatış esnasında hafif 3D perspektif daralması
             ctx.scale(Math.max(0.82, Math.cos(bankAngle)), 1);
 
             let actualW = maxW;
             let actualH = maxH;
 
-            // Düşman motor parlaması (Bize doğru gelen jetin/uzay aracının itki/far parlaması)
+            // Düşman motor parlaması
             const enginePulse = 0.7 + Math.sin(performance.now() * 0.015 + target.phase) * 0.3;
             const glowR = Math.max(8, maxW * 0.14) * enginePulse;
             const eGrad = ctx.createRadialGradient(0, -maxH * 0.05, 1, 0, -maxH * 0.05, glowR);
@@ -1112,12 +1176,17 @@
                 ctx.stroke();
             }
 
-            // İtki/Vurma anında beyaz parlama (Hit Flash)
+            // DÜZELTME 1: Dikdörtgen beyaz kutu yerine dairesel lokalize plazma darbe halkası (Armor Impact Pulse)
             if (target.hitFlash > 0) {
-                ctx.globalCompositeOperation = 'source-atop';
-                ctx.fillStyle = `rgba(255, 255, 255, ${target.hitFlash * 0.55})`;
-                ctx.fillRect(-actualW / 2, -actualH / 2, actualW, actualH);
-                ctx.globalCompositeOperation = 'source-over';
+                const pulseR = Math.min(actualW, actualH) * (0.28 + (1 - target.hitFlash) * 0.22);
+                const hitGrad = ctx.createRadialGradient(0, 0, 2, 0, 0, pulseR);
+                hitGrad.addColorStop(0, `rgba(255, 255, 255, ${target.hitFlash * 0.55})`);
+                hitGrad.addColorStop(0.5, `rgba(56, 189, 248, ${target.hitFlash * 0.35})`);
+                hitGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                ctx.fillStyle = hitGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
+                ctx.fill();
             }
 
             ctx.restore();
@@ -1335,6 +1404,11 @@
         let bonuses = [];
         let particles = [];        // Patlama, kıvılcım, roket dumanı ve kanat ucu vorteks izleri
         let speedLines = [];       // Süpersonik uçuş hissi veren 3D hız/bulut çizgileri
+        let shockwaves = [];       // Çoklu hedef imha edildiğinde büyüyen süpersonik patlama halkaları
+        let damageSparks = [];     // Hasar alındığında kokpit ekranından sıçrayan elektrik kıvılcımları
+        let cockpitCracks = [];    // Hasar alındığında 1.5-2 saniye beliren kokpit camı çatlakları ve elektrik arkları
+        let cockpitDamageTimer = 0;
+        let warningBeepTimer = 0;
         let floatingTexts = [];
         let perspectiveGridOffset = 0;
 
@@ -1425,6 +1499,7 @@
                 rightRecharge: 0,
                 rollAngle: 0,
                 pitchFactor: 0,
+                afterburnerBoost: 0, // W tuşuna basıldığında devreye giren Süpersonik Art Yakıcı (Afterburner) seviyesi
                 shieldHitTimer: 0,
                 wingVortexHistoryL: [],
                 wingVortexHistoryR: []
@@ -1440,6 +1515,10 @@
             incomingMissiles = [];
             bonuses = [];
             particles = [];
+            shockwaves = [];
+            damageSparks = [];
+            cockpitCracks = [];
+            cockpitDamageTimer = 0;
             floatingTexts = [];
             initSpeedLines();
 
@@ -1480,63 +1559,66 @@
         }
 
         /**
-         * GELİŞMİŞ KANAT ROKETİ VE GÜDÜMLÜ SALVO SİSTEMİ:
-         * Kanattan fırlatılan roket önce kanat pilonundan yana/aşağı doğru ayrılır (Pylon Drop Phase),
-         * ardından roket motorunu ateşleyip yoğun duman izi (Smoke Trail) bırakarak kilitlenen hedefe doğru kavisli (Bezier/Homing) uçar.
+         * GELİŞMİŞ ÇOKLU HEDEF KİLİTLEYEN KANAT ROKETİ SİSTEMİ (MULTI-TARGET SWARM SALVO):
+         * DÜZELTME 2: Her bir kanat roketi ateşlendiğinde kanat pilonundan 3 ADET bağımsız güdümlü mikro-füze (Swarm Pod) çıkar!
+         * Bu 3 füze tek bir hedefe gitmek yerine, ekrandaki BİRBİRİNE YAKIN FARKLI 3-4 DÜŞMAN HEDEFİNİ (veya gelen tehlike füzelerini)
+         * ayrı ayrı paylaşarak kilitler ve zincirleme şok dalgalı (Shockwave Ring) imha animasyonu ile aynı anda 3-4 hedefi yok eder!
          */
         function fireWingMissile(side) {
             if (gameState !== 'PLAYING' || !player) return;
 
-            // Nişangaha en yakın düşman uçağını veya gelen füzeyi otomatik kilitle
-            let lockedTarget = null;
-            let minDist = Infinity;
-            targets.forEach(t => {
-                const renderX = t.x + camOffsetX * (0.2 + t.z * 0.35);
-                const renderY = t.y + camOffsetY * (0.2 + t.z * 0.35);
-                const d = Math.hypot(renderX - crosshair.x, renderY - crosshair.y);
-                if (d < minDist) {
-                    minDist = d;
-                    lockedTarget = t;
-                }
+            if (side === 'left' && player.leftMissiles <= 0) return;
+            if (side === 'right' && player.rightMissiles <= 0) return;
+
+            if (side === 'left') player.leftMissiles--;
+            if (side === 'right') player.rightMissiles--;
+
+            // Nişangaha yakın olan tüm düşman hedeflerini mesafeye göre sırala (Farklı hedeflere dağıtmak için)
+            const sortedTargetCandidates = [...targets].sort((a, b) => {
+                const pfa = 0.18 + a.z * 0.35;
+                const pfb = 0.18 + b.z * 0.35;
+                const da = Math.hypot((a.x + camOffsetX * pfa) - crosshair.x, (a.y + camOffsetY * pfb) - crosshair.y);
+                const db = Math.hypot((b.x + camOffsetX * pfb) - crosshair.x, (b.y + camOffsetY * pfb) - crosshair.y);
+                return da - db;
             });
 
-            const launchPylonMissile = (pylonSide) => {
-                const isLeft = pylonSide === 'left';
-                const offsetX = isLeft ? -player.w * 0.28 : player.w * 0.28;
+            const isLeft = side === 'left';
+            const subMissileCount = 3; // Her kanat ateşlemesinde 3 adet güdümlü füze fırlatılır (Salvo'da toplam 6 füze!)
+
+            for (let s = 0; s < subMissileCount; s++) {
+                // Her bir alt-roket farklı bir düşman hedefini seçer (3-4 yakın hedefi aynı anda imha etmek için)
+                const assignedTarget = sortedTargetCandidates.length > 0
+                    ? sortedTargetCandidates[s % sortedTargetCandidates.length]
+                    : null;
+
+                const offsetX = (isLeft ? -player.w * 0.26 : player.w * 0.26) + (s - 1) * (isLeft ? -12 : 12);
                 const startX = player.x + offsetX * Math.cos(player.rollAngle);
-                const startY = player.y + offsetX * Math.sin(player.rollAngle) + 8;
+                const startY = player.y + offsetX * Math.sin(player.rollAngle) + 6 + s * 4;
 
-                // Kanattan ilk ayrılma hızı (yana ve hafif aşağı doğru fırlama)
-                const ejectVx = (isLeft ? -5.5 : 5.5) + player.vx * 0.4;
-                const ejectVy = 3.2;
+                // Kanattan yelpaze şeklinde ayrılma açısı
+                const spreadVx = (isLeft ? -4.8 - s * 2.2 : 4.8 + s * 2.2) + player.vx * 0.35;
+                const spreadVy = 2.0 + s * 1.4;
 
-                // Kanat pilon ateşleme kıvılcımı
-                createExplosion(startX, startY, '#38bdf8', 8);
+                createExplosion(startX, startY, '#38bdf8', 6);
 
                 wingMissiles.push({
                     spriteName: isLeft ? 'Avcı_Füze_Sol' : 'Avcı_Füze_Sag',
                     x: startX,
                     y: startY,
-                    vx: ejectVx,
-                    vy: ejectVy,
-                    targetX: lockedTarget ? lockedTarget.x : crosshair.x,
-                    targetY: lockedTarget ? lockedTarget.y : crosshair.y,
-                    lockedTarget: lockedTarget,
-                    age: 0,
-                    scale: 1.0,
+                    vx: spreadVx,
+                    vy: spreadVy,
+                    curveDir: (isLeft ? -1 : 1) * (0.8 + s * 0.35),
+                    targetX: assignedTarget ? assignedTarget.x : (crosshair.x + (s - 1) * 55),
+                    targetY: assignedTarget ? assignedTarget.y : (crosshair.y + (s - 1) * 35),
+                    lockedTarget: assignedTarget,
+                    age: -s * 3, // Çok kısa kademeli ateşleme gecikmesi (gerçekçi salvo hissi)
+                    scale: 0.92,
                     trail: [],
-                    damage: player.damage * 1.85
+                    damage: player.damage * 1.65
                 });
-                playSound('missile');
-            };
-
-            if (side === 'left' && player.leftMissiles > 0) {
-                player.leftMissiles--;
-                launchPylonMissile('left');
-            } else if (side === 'right' && player.rightMissiles > 0) {
-                player.rightMissiles--;
-                launchPylonMissile('right');
             }
+
+            playSound('missile');
             updateHUD();
         }
 
@@ -1601,7 +1683,7 @@
                 vy: 0.7,
                 baseW: 340,
                 baseH: 245,
-                z: 0.18, // Boss da uzaktan heybetli şekilde yaklaşır ve 0.92 derinliğinde taktiksel komuta uçuşu yapar
+                z: 0.18,
                 vz: 0.0035,
                 pattern: 'bossCommand',
                 phase: 0,
@@ -1636,7 +1718,7 @@
             });
         }
 
-        function createExplosion(x, y, color, count = 18) {
+        function createExplosion(x, y, color, count = 18, withShockwave = false) {
             for (let i = 0; i < count; i++) {
                 const ang = Math.random() * Math.PI * 2;
                 const spd = 1.5 + Math.random() * 6.5;
@@ -1648,6 +1730,62 @@
                     color: color || '#f59e0b',
                     alpha: 1,
                     decay: 0.025 + Math.random() * 0.02
+                });
+            }
+            if (withShockwave) {
+                shockwaves.push({
+                    x, y,
+                    r: 8,
+                    maxR: 95 + Math.random() * 35,
+                    alpha: 0.95,
+                    color: color || '#38bdf8'
+                });
+            }
+        }
+
+        // DÜZELTME 4: Hasar alındığında 1.5 - 2 saniyelik kokpit camı çatlaması ve elektrik ark/spark patlaması üretir
+        function triggerCockpitDamageEffect(impactX, impactY) {
+            cockpitDamageTimer = 105; // ~1.75 saniye (60 FPS)
+            playSound('sparkHit');
+
+            // Kokpit camında 4-5 ana kırık/çatlak hattı oluştur
+            cockpitCracks = [];
+            const origins = [
+                { x: impactX || canvas.width * 0.5, y: impactY || canvas.height * 0.65 },
+                { x: canvas.width * (0.15 + Math.random() * 0.7), y: canvas.height * (0.2 + Math.random() * 0.6) }
+            ];
+
+            origins.forEach(org => {
+                const branchCount = 5 + Math.floor(Math.random() * 4);
+                for (let b = 0; b < branchCount; b++) {
+                    let cx = org.x;
+                    let cy = org.y;
+                    let angle = (Math.PI * 2 * b) / branchCount + (Math.random() - 0.5) * 0.5;
+                    const points = [{ x: cx, y: cy }];
+                    const segments = 5 + Math.floor(Math.random() * 5);
+                    for (let s = 0; s < segments; s++) {
+                        angle += (Math.random() - 0.5) * 0.65;
+                        const len = 22 + Math.random() * 38;
+                        cx += Math.cos(angle) * len;
+                        cy += Math.sin(angle) * len;
+                        points.push({ x: cx, y: cy });
+                    }
+                    cockpitCracks.push({ points });
+                }
+            });
+
+            // Elektrik Kıvılcımları (Sparks) fırlat
+            for (let i = 0; i < 36; i++) {
+                const ang = Math.random() * Math.PI * 2;
+                const spd = 3 + Math.random() * 11;
+                damageSparks.push({
+                    x: origins[0].x + (Math.random() - 0.5) * 80,
+                    y: origins[0].y + (Math.random() - 0.5) * 60,
+                    vx: Math.cos(ang) * spd,
+                    vy: Math.sin(ang) * spd - 1.5,
+                    len: 8 + Math.random() * 16,
+                    color: Math.random() < 0.55 ? '#38bdf8' : '#fde047',
+                    alpha: 1
                 });
             }
         }
@@ -1692,6 +1830,34 @@
             const rightPct = player.rightMissiles === player.maxRightMissiles ? 100 : (player.rightRecharge / 130) * 100;
             document.getElementById('rightMissileBar').style.width = `${rightPct}%`;
 
+            // DÜZELTME 5: Askeri Kritik Seviye Uyarı Sistemi (HULL, SHIELD, FUEL %30'un altına düştüğünde yanıp sönen alarm ve sesli ikaz)
+            const hpRatio = player.hp / player.maxHp;
+            const shldRatio = player.shield / player.maxShield;
+            const fuelRatio = player.fuel / player.maxFuel;
+
+            const hullRow = document.getElementById('hullRowContainer');
+            const shldRow = document.getElementById('shieldRowContainer');
+            const fuelRow = document.getElementById('fuelRowContainer');
+            const masterCaution = document.getElementById('hudMasterCaution');
+
+            if (hullRow) hullRow.classList.toggle('critical-bar-alert', hpRatio <= 0.30);
+            if (shldRow) shldRow.classList.toggle('critical-bar-alert', shldRatio <= 0.25);
+            if (fuelRow) fuelRow.classList.toggle('critical-bar-alert', fuelRatio <= 0.25);
+
+            const warnings = [];
+            if (hpRatio <= 0.30) warnings.push('HULL CRITICAL // EJECT WARN');
+            if (fuelRatio <= 0.25) warnings.push('BINGO FUEL // LOW JP-8');
+            if (shldRatio <= 0.25) warnings.push('DEFLECTOR SHIELD LOW');
+
+            if (masterCaution) {
+                if (warnings.length > 0) {
+                    masterCaution.classList.remove('hidden');
+                    masterCaution.innerText = `⚠ MASTER CAUTION: ${warnings.join(' | ')}`;
+                } else {
+                    masterCaution.classList.add('hidden');
+                }
+            }
+
             if (activeBoss) {
                 document.getElementById('bossHudHpText').innerText = `${Math.max(0, Math.round(activeBoss.hp))} HP`;
                 document.getElementById('bossHudBar').style.width = `${Math.max(0, (activeBoss.hp / activeBoss.maxHp) * 100)}%`;
@@ -1701,12 +1867,25 @@
         function updateGame() {
             if (gameState !== 'PLAYING' || !player) return;
 
-            // 1. Klavye + Fare / Dokunmatik ile Nişangah Yönetimi
+            // 1. Klavye + Fare / Dokunmatik Kontrolleri & DÜZELTME 3: W Tuşu Süpersonik Art Yakıcı (Afterburner Boost) Manevrası!
             const moveStep = player.speed * 1.25;
             if (keys['ArrowLeft'] || keys['KeyA']) crosshair.x -= moveStep;
             if (keys['ArrowRight'] || keys['KeyD']) crosshair.x += moveStep;
-            if (keys['ArrowUp'] || keys['KeyW']) crosshair.y -= moveStep;
-            if (keys['ArrowDown'] || keys['KeyS']) crosshair.y += moveStep;
+            if (keys['ArrowUp']) crosshair.y -= moveStep;
+            if (keys['ArrowDown']) crosshair.y += moveStep;
+
+            // W Tuşuna basıldığında uçak Süpersonik Art Yakıcı (Afterburner Turbo) açar, S tuşuna basıldığında Hava Freni (Airbrake) yapar
+            const isBoosting = !!(keys['KeyW'] || keys['ArrowUp']);
+            const isBraking = !!(keys['KeyS'] || keys['ArrowDown']);
+
+            if (isBoosting) {
+                if (player.afterburnerBoost < 0.1) playSound('afterburner');
+                player.afterburnerBoost = Math.min(1.0, player.afterburnerBoost + 0.08);
+            } else if (isBraking) {
+                player.afterburnerBoost = Math.max(-0.4, player.afterburnerBoost - 0.06);
+            } else {
+                player.afterburnerBoost += (0 - player.afterburnerBoost) * 0.08;
+            }
 
             crosshair.x = Math.max(40, Math.min(canvas.width - 40, crosshair.x));
             crosshair.y = Math.max(55, Math.min(canvas.height - 75, crosshair.y));
@@ -1722,14 +1901,12 @@
             camTiltAngle += (-normMouseX * 0.055 - camTiltAngle) * 0.08;
 
             /**
-             * 3. GERÇEKÇİ AERODİNAMİK UÇUŞ FİZİĞİ (SPRING-DAMPER + ROLL BANKING + PITCH):
-             * Uçak mouse imlecine yapışık gibi hareket etmez.
-             * Nişangah ekranın üst/orta/yan bölgelerinde gezerken, avcı uçağı ekranın alt-orta uçuş koridorunda
-             * eylemsizlik (inertia) ve yatış açısıyla (bank angle) süzülerek nişangah hattını takip eder.
+             * 3. GERÇEKÇİ AERODİNAMİK UÇUŞ FİZİĞİ + W TUŞU SÜPERSONİK İTKİ HAMLESİ
              */
+            const boostForwardOffset = player.afterburnerBoost * 68;
             const flightDeckCenterX = canvas.width * 0.5 + (crosshair.x - canvas.width * 0.5) * 0.72;
-            const flightDeckCenterY = canvas.height * 0.76 + (crosshair.y - canvas.height * 0.45) * 0.34;
-            const clampedDesiredY = Math.max(canvas.height * 0.56, Math.min(canvas.height - 85, flightDeckCenterY));
+            const flightDeckCenterY = (canvas.height * 0.77 - boostForwardOffset) + (crosshair.y - canvas.height * 0.45) * 0.28;
+            const clampedDesiredY = Math.max(canvas.height * 0.52, Math.min(canvas.height - 80, flightDeckCenterY));
 
             const springStrength = 0.018 + (player.speed * 0.0012);
             const damping = 0.82;
@@ -1742,23 +1919,33 @@
             player.x += player.vx;
             player.y += player.vy;
 
-            // Yatış Açısı (Roll Angle) yatay hızlanma ve nişangah farkından beslenir
+            // Yatış Açısı (Roll Angle)
             const targetRoll = Math.max(-0.58, Math.min(0.58, (player.vx * 0.042) + ((crosshair.x - player.x) * 0.0015)));
             player.rollAngle += (targetRoll - player.rollAngle) * 0.14;
 
             // Yunuslama (Pitch) faktörü
-            const targetPitch = Math.max(-0.8, Math.min(0.8, player.vy * 0.06));
+            const targetPitch = Math.max(-0.8, Math.min(0.8, player.vy * 0.06 - player.afterburnerBoost * 0.35));
             player.pitchFactor += (targetPitch - player.pitchFactor) * 0.14;
 
             // Kanat Ucu Buhar İzi (Wingtip Condensation Vortices) kaydet
             const wingSpanHalf = player.w * 0.44 * Math.cos(player.rollAngle);
             const wingLiftY = player.w * 0.44 * Math.sin(player.rollAngle);
-            player.wingVortexHistoryL.push({ x: player.x - wingSpanHalf, y: player.y - wingLiftY + 12, alpha: Math.min(0.65, 0.15 + Math.abs(player.rollAngle) * 0.9) });
-            player.wingVortexHistoryR.push({ x: player.x + wingSpanHalf, y: player.y + wingLiftY + 12, alpha: Math.min(0.65, 0.15 + Math.abs(player.rollAngle) * 0.9) });
+            player.wingVortexHistoryL.push({ x: player.x - wingSpanHalf, y: player.y - wingLiftY + 12, alpha: Math.min(0.85, 0.18 + Math.abs(player.rollAngle) * 0.9 + Math.max(0, player.afterburnerBoost) * 0.5) });
+            player.wingVortexHistoryR.push({ x: player.x + wingSpanHalf, y: player.y + wingLiftY + 12, alpha: Math.min(0.85, 0.18 + Math.abs(player.rollAngle) * 0.9 + Math.max(0, player.afterburnerBoost) * 0.5) });
             if (player.wingVortexHistoryL.length > 14) player.wingVortexHistoryL.shift();
             if (player.wingVortexHistoryR.length > 14) player.wingVortexHistoryR.shift();
 
             if (player.shieldHitTimer > 0) player.shieldHitTimer--;
+            if (cockpitDamageTimer > 0) cockpitDamageTimer--;
+
+            // Kritik Seviye Sesli Kokpit İkazı
+            if ((player.hp / player.maxHp <= 0.30) || (player.fuel / player.maxFuel <= 0.25)) {
+                warningBeepTimer++;
+                if (warningBeepTimer >= 55) {
+                    playSound('warningBeep');
+                    warningBeepTimer = 0;
+                }
+            }
 
             // 4. Yakıt Tüketimi
             player.fuel -= 1 / 60;
@@ -1846,10 +2033,28 @@
                 }
             }
 
-            // 8. Güdümlü Kanat Roketlerini Güncelle (Önce Pilon Bırakma Fazı, Sonra Güdümlü İtki + Yoğun Duman İzi)
+            // 8. Güdümlü Kanat Roketlerini Güncelle (3'lü Sürü Salvo - Her Biri Kendi Hedefine Kavisli Güdümlenir ve Geniş Alan İmhası Yapar)
             for (let i = wingMissiles.length - 1; i >= 0; i--) {
                 const m = wingMissiles[i];
                 m.age++;
+                if (m.age < 0) continue; // Kademeli salvo gecikmesi
+
+                // Eğer kilitli hedefi vurulduysa anında hayatta kalan en yakın diğer düşman hedefine kilit aktar (Smart Re-Lock)
+                if (!m.lockedTarget || !targets.includes(m.lockedTarget)) {
+                    let bestT = null;
+                    let bestD = Infinity;
+                    targets.forEach(t => {
+                        const pf = 0.18 + t.z * 0.35;
+                        const rx = t.x + camOffsetX * pf;
+                        const ry = t.y + camOffsetY * pf;
+                        const d = Math.hypot(rx - m.x, ry - m.y);
+                        if (d < bestD) {
+                            bestD = d;
+                            bestT = t;
+                        }
+                    });
+                    m.lockedTarget = bestT;
+                }
 
                 if (m.lockedTarget && targets.includes(m.lockedTarget)) {
                     const pf = 0.18 + m.lockedTarget.z * 0.35;
@@ -1857,32 +2062,30 @@
                     m.targetY = m.lockedTarget.y + camOffsetY * pf;
                 }
 
-                if (m.age < 8) {
-                    // İlk 8 kare: Kanat pilonundan ayrılma (Drop-off)
+                if (m.age < 6) {
                     m.x += m.vx;
                     m.y += m.vy;
                     m.vx *= 0.88;
                     m.vy *= 0.88;
                 } else {
-                    // Roket motoru ateşlenir ve hedefe yüksek hızla güdümlenir
                     const dx = m.targetX - m.x;
                     const dy = m.targetY - m.y;
                     const dist = Math.max(1, Math.hypot(dx, dy));
-                    const thrustSpeed = Math.min(24, 9 + (m.age - 8) * 1.15);
-                    m.vx = m.vx * 0.72 + (dx / dist) * thrustSpeed * 0.28;
-                    m.vy = m.vy * 0.72 + (dy / dist) * thrustSpeed * 0.28;
+                    const thrustSpeed = Math.min(26, 11 + (m.age - 6) * 1.3);
+                    const sway = Math.sin(m.age * 0.25) * (m.curveDir || 1) * 2.2;
+                    m.vx = m.vx * 0.68 + ((dx / dist) * thrustSpeed + sway) * 0.32;
+                    m.vy = m.vy * 0.68 + ((dy / dist) * thrustSpeed) * 0.32;
                     m.x += m.vx;
                     m.y += m.vy;
-                    m.scale = Math.max(0.42, m.scale * 0.985);
+                    m.scale = Math.max(0.45, m.scale * 0.986);
                 }
 
-                // Roket duman izi (Smoke Plume)
-                m.trail.push({ x: m.x, y: m.y, r: 5 + Math.random() * 4, alpha: 0.75 });
+                m.trail.push({ x: m.x, y: m.y, r: 5 + Math.random() * 4, alpha: 0.8 });
                 if (m.trail.length > 18) m.trail.shift();
 
-                if (Math.hypot(m.targetX - m.x, m.targetY - m.y) < 30 || m.age > 95) {
+                if (Math.hypot(m.targetX - m.x, m.targetY - m.y) < 36 || m.age > 90) {
                     checkPointHit(m.x, m.y, m.damage, true);
-                    createExplosion(m.x, m.y, '#f59e0b', 28);
+                    createExplosion(m.x, m.y, '#f59e0b', 30, true);
                     playSound('explosion');
                     wingMissiles.splice(i, 1);
                 }
@@ -2015,13 +2218,27 @@
                 }
             }
 
-            // Parçacık ve Yazılar
+            // Parçacık, Şok Halkası, Kıvılcım ve Yazılar
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
                 p.x += p.vx;
                 p.y += p.vy;
                 p.alpha -= (p.decay || 0.03);
                 if (p.alpha <= 0) particles.splice(i, 1);
+            }
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                const sw = shockwaves[i];
+                sw.r += (sw.maxR - sw.r) * 0.18 + 2.5;
+                sw.alpha -= 0.045;
+                if (sw.alpha <= 0) shockwaves.splice(i, 1);
+            }
+            for (let i = damageSparks.length - 1; i >= 0; i--) {
+                const sp = damageSparks[i];
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.vy += 0.32; // Yerçekimi ile kıvılcım düşüşü
+                sp.alpha -= 0.025;
+                if (sp.alpha <= 0) damageSparks.splice(i, 1);
             }
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 const ft = floatingTexts[i];
@@ -2034,7 +2251,8 @@
         }
 
         function checkPointHit(hx, hy, dmg, isAreaMissile) {
-            const hitRadiusBonus = isAreaMissile ? 72 : 24;
+            // DÜZELTME 2: Roket patlamalarının birbirine yakın hedefleri de (zincirleme küme imhası) rahatça vurabilmesi için geniş patlama yarıçapı
+            const hitRadiusBonus = isAreaMissile ? 135 : 24;
 
             // 1. Havada gelen füzeleri vurma
             for (let i = incomingMissiles.length - 1; i >= 0; i--) {
@@ -2045,7 +2263,7 @@
                     createExplosion(im.x, im.y, '#f97316', 5);
                     if (im.hp <= 0) {
                         score += 35;
-                        createExplosion(im.x, im.y, '#f59e0b', 14);
+                        createExplosion(im.x, im.y, '#f59e0b', 14, isAreaMissile);
                         addFloatingText(im.x, im.y, 'FÜZE İMHA!', '#fbbf24');
                         incomingMissiles.splice(i, 1);
                     }
@@ -2065,7 +2283,7 @@
                 }
             }
 
-            // 3. 3D Derinlikli Düşman Hedeflerini Vurma
+            // 3. 3D Derinlikli Düşman Hedeflerini Vurma (Roket ise patlama menzilindeki birbirine yakın normal hedefleri tek seferde imha eder!)
             for (let i = targets.length - 1; i >= 0; i--) {
                 const t = targets[i];
                 const pf = 0.18 + t.z * 0.35;
@@ -2075,15 +2293,18 @@
                 const h = t.baseH * t.z + hitRadiusBonus;
 
                 if (Math.abs(hx - renderX) <= w * 0.5 && Math.abs(hy - renderY) <= h * 0.5) {
-                    t.hp -= dmg;
+                    // Kanat roketleri normal hedefleri doğrudan imha edecek güçtedir, Boss'lara ise yüksek hasar verir
+                    const effectiveDmg = (isAreaMissile && !t.isBoss) ? Math.max(dmg, t.hp + 10) : dmg;
+                    t.hp -= effectiveDmg;
                     t.hitFlash = 1.0;
-                    createExplosion(hx, hy, '#38bdf8', 4);
+                    createExplosion(renderX, renderY, '#38bdf8', 5);
 
                     if (t.hp <= 0) {
                         score += t.score;
                         kills++;
                         currentWaveKills++;
-                        createExplosion(renderX, renderY, t.color, t.isBoss ? 52 : 26);
+                        createExplosion(renderX, renderY, t.color, t.isBoss ? 55 : 28, true);
+                        addFloatingText(renderX, renderY - 20, t.isBoss ? '💥 BOSS İMHA EDİLDİ!' : `+${t.score} İMHA!`, '#fde047');
                         playSound('explosion');
 
                         if (t.isBoss || Math.random() < 0.34) {
@@ -2107,7 +2328,9 @@
 
         function applyDamageToPlayer(amount) {
             if (!player) return;
-            player.shieldHitTimer = 22;
+            player.shieldHitTimer = 26;
+            triggerCockpitDamageEffect(player.x, player.y);
+
             if (player.shield > 0) {
                 const absorbed = Math.min(player.shield, amount);
                 player.shield -= absorbed;
@@ -2120,7 +2343,7 @@
 
             if (player.hp <= 0) {
                 player.hp = 0;
-                createExplosion(player.x, player.y, '#ef4444', 42);
+                createExplosion(player.x, player.y, '#ef4444', 42, true);
                 triggerGameOver('Avcı uçağınızın gövde bütünlüğü sıfırlandı!');
             }
         }
@@ -2237,22 +2460,24 @@
 
             if (gameState !== 'PLAYING' || !player) return;
 
-            // 2. SÜPERSONİK UÇUŞ HIZ ÇİZGİLERİ (Ufuk merkezinden dışarı akan hava akımı izleri)
+            // 2. SÜPERSONİK UÇUŞ HIZ ÇİZGİLERİ (W tuşuna basıldığında Afterburner Warp hızına çıkar!)
             const vanishX = canvas.width / 2 + camOffsetX * 0.45;
             const vanishY = canvas.height * 0.38 + camOffsetY * 0.45;
+            const boostMult = 1 + Math.max(0, player.afterburnerBoost) * 2.8;
             ctx.save();
-            ctx.strokeStyle = 'rgba(224, 242, 254, 0.22)';
-            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = player.afterburnerBoost > 0.2 ? 'rgba(56, 189, 248, 0.48)' : 'rgba(224, 242, 254, 0.22)';
+            ctx.lineWidth = player.afterburnerBoost > 0.2 ? 2.0 : 1.2;
             speedLines.forEach(sl => {
-                sl.dist += sl.speed;
+                sl.dist += sl.speed * boostMult;
                 if (sl.dist > Math.max(canvas.width, canvas.height) * 0.75) {
                     sl.dist = 35 + Math.random() * 60;
                     sl.angle = Math.random() * Math.PI * 2;
                 }
                 const x1 = vanishX + Math.cos(sl.angle) * sl.dist;
                 const y1 = vanishY + Math.sin(sl.angle) * sl.dist;
-                const x2 = vanishX + Math.cos(sl.angle) * (sl.dist + sl.len * (sl.dist / 300));
-                const y2 = vanishY + Math.sin(sl.angle) * (sl.dist + sl.len * (sl.dist / 300));
+                const lineLength = sl.len * (sl.dist / 300) * boostMult;
+                const x2 = vanishX + Math.cos(sl.angle) * (sl.dist + lineLength);
+                const y2 = vanishY + Math.sin(sl.angle) * (sl.dist + lineLength);
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
                 ctx.lineTo(x2, y2);
@@ -2344,7 +2569,7 @@
 
             // 6. KANAT ROKETLERİNİN DUMAN İZİ VE GÜDÜMLÜ UÇUŞU
             wingMissiles.forEach(m => {
-                // Önce roketin arkasındaki yoğun duman izini çiz
+                if (m.age < 0) return;
                 for (let t = 0; t < m.trail.length; t++) {
                     const pt = m.trail[t];
                     const ratio = (t + 1) / m.trail.length;
@@ -2413,12 +2638,12 @@
             drawVortexRibbon(player.wingVortexHistoryL);
             drawVortexRibbon(player.wingVortexHistoryR);
 
-            // 9. OYUNCUNUN AERODİNAMİK AVCI UÇAĞI
+            // 9. OYUNCUNUN AERODİNAMİK AVCI UÇAĞI (W Tuşu Afterburner Sonik Konisi Destekli)
             const isFiringNow = (crosshair.firing || keys['Space']);
-            drawFighterSpriteOrVector(ctx, player.plane, player.x, player.y, player.w, player.h, player.rollAngle, player.pitchFactor, true, isFiringNow);
+            drawFighterSpriteOrVector(ctx, player.plane, player.x, player.y, player.w, player.h, player.rollAngle, player.pitchFactor, true, isFiringNow, Math.max(0, player.afterburnerBoost));
 
             if (player.shield > 0 && player.shieldHitTimer > 0) {
-                const alpha = (player.shieldHitTimer / 22) * 0.65;
+                const alpha = (player.shieldHitTimer / 26) * 0.65;
                 ctx.save();
                 ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
                 ctx.lineWidth = 2.5;
@@ -2428,7 +2653,18 @@
                 ctx.restore();
             }
 
-            // 10. PATLAMA VE YAZILAR
+            // 10. ŞOK DALGASI HALKALARI, PATLAMA PARÇACIKLARI VE YAZILAR
+            shockwaves.forEach(sw => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, sw.alpha);
+                ctx.strokeStyle = sw.color;
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            });
+
             particles.forEach(p => {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, p.alpha);
@@ -2436,6 +2672,65 @@
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.restore();
+            });
+
+            // DÜZELTME 4: HASAR ALINDIĞINDA KOKPİT CAMI ÇATLAMASI VE ELEKTRİK SPARK EFEKTİ (1.5 - 2 SANİYE)
+            if (cockpitDamageTimer > 0) {
+                const dmgAlpha = Math.min(1, cockpitDamageTimer / 65);
+                ctx.save();
+
+                // Kırmızı-Mavi kısa devre ekran kenar parlaması
+                const dmgGrad = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, canvas.width * 0.25, canvas.width / 2, canvas.height / 2, canvas.width * 0.72);
+                dmgGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                dmgGrad.addColorStop(0.75, `rgba(225, 29, 72, ${dmgAlpha * 0.24})`);
+                dmgGrad.addColorStop(1, `rgba(56, 189, 248, ${dmgAlpha * 0.45})`);
+                ctx.fillStyle = dmgGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Kokpit Camı Kırık Çizgileri ve Üzerinden Geçen Elektrik Arkları
+                cockpitCracks.forEach(crack => {
+                    ctx.strokeStyle = `rgba(226, 232, 240, ${dmgAlpha * 0.85})`;
+                    ctx.shadowColor = '#38bdf8';
+                    ctx.shadowBlur = 10;
+                    ctx.lineWidth = 2.0;
+                    ctx.beginPath();
+                    crack.points.forEach((pt, idx) => {
+                        if (idx === 0) ctx.moveTo(pt.x, pt.y);
+                        else ctx.lineTo(pt.x, pt.y);
+                    });
+                    ctx.stroke();
+
+                    // Rastgele titreşen mavi/sarı elektrik arkı (Electric Arc)
+                    if (Math.random() < 0.65) {
+                        ctx.strokeStyle = Math.random() < 0.5 ? `rgba(56, 189, 248, ${dmgAlpha})` : `rgba(253, 224, 71, ${dmgAlpha})`;
+                        ctx.lineWidth = 1.4;
+                        ctx.beginPath();
+                        crack.points.forEach((pt, idx) => {
+                            const jx = pt.x + (Math.random() - 0.5) * 8;
+                            const jy = pt.y + (Math.random() - 0.5) * 8;
+                            if (idx === 0) ctx.moveTo(jx, jy);
+                            else ctx.lineTo(jx, jy);
+                        });
+                        ctx.stroke();
+                    }
+                });
+
+                ctx.restore();
+            }
+
+            // Kokpitten sıçrayan elektrik kıvılcımları
+            damageSparks.forEach(sp => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, sp.alpha);
+                ctx.strokeStyle = sp.color;
+                ctx.shadowColor = sp.color;
+                ctx.shadowBlur = 8;
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                ctx.moveTo(sp.x, sp.y);
+                ctx.lineTo(sp.x - sp.vx * 1.8, sp.y - sp.vy * 1.8);
+                ctx.stroke();
                 ctx.restore();
             });
 
