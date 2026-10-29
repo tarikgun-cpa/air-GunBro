@@ -226,18 +226,29 @@
                     <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-300 z-20 pointer-events-none"></div>
                 </div>
 
-                <!-- ALT: SEÇİLİ SORTİ BRİFİNG ÖZETİ (UÇAK + HARİTA) -->
-                <div class="mt-2.5 bg-slate-950/90 border border-cyan-500/35 rounded-xl p-2.5 shrink-0 space-y-1.5">
+                <!-- ALT: OYUN MODU SEÇİMİ (9 LEVEL ARCADE CAMPAIGN / SERBEST SİMÜLASYON) & SORTİ ÖZETİ -->
+                <div class="mt-2.5 bg-slate-950/95 border border-cyan-500/35 rounded-xl p-2.5 shrink-0 space-y-2">
                     <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 border-b border-slate-800 pb-1">
-                        <span>SORTİ GÖREV ÖZETİ //</span>
-                        <span class="text-emerald-400 font-bold">● SİSTEM HAZIR</span>
+                        <span>OPERASYON MODU SEÇİMİ //</span>
+                        <span id="menuModeBadge" class="text-amber-300 font-bold font-orbitron">9 LEVEL ARCADE</span>
                     </div>
-                    <div class="flex justify-between items-center text-xs">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <button id="btnSelectArcadeMode" class="py-1.5 px-2 rounded-lg font-orbitron text-[10px] font-black tracking-wider border border-amber-400 bg-amber-500/20 text-amber-200 shadow-lg shadow-amber-500/10 transition">
+                            🕹️ 9 LVL ARCADE
+                        </button>
+                        <button id="btnSelectSimMode" class="py-1.5 px-2 rounded-lg font-orbitron text-[10px] font-bold tracking-wider border border-slate-700 bg-slate-900/80 text-slate-400 hover:text-cyan-200 transition">
+                            🌐 SERBEST SİM
+                        </button>
+                    </div>
+                    <p id="menuModeDesc" class="text-[10px] text-slate-300 leading-tight">
+                        9 Haritada artan zorluk, azalan ikmal! Her <strong class="text-amber-300">50.000 Puan</strong> = 1 Devam Hakkı (Continue).
+                    </p>
+                    <div class="flex justify-between items-center text-[11px] pt-1 border-t border-slate-800/80">
                         <span class="text-slate-400 font-semibold">SEÇİLİ AVCI:</span>
                         <span id="selectedPlaneBadge" class="font-orbitron font-black text-cyan-300 bg-cyan-500/15 border border-cyan-400/50 px-2 py-0.5 rounded">Avcı_Kaan</span>
                     </div>
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-400 font-semibold">OPERASYON BÖLGESİ:</span>
+                    <div class="flex justify-between items-center text-[11px]">
+                        <span class="text-slate-400 font-semibold">BAŞLANGIÇ CEPHESİ:</span>
                         <span id="selectedMapBadge" class="font-orbitron font-black text-amber-300 bg-amber-500/15 border border-amber-400/50 px-2 py-0.5 rounded">Dunya_Okyanus</span>
                     </div>
                 </div>
@@ -412,13 +423,15 @@
 
                 <!-- ORTA KOKPİT VİZÖRÜ: PUSULA, SKOR, DALGA, BOSS BARI VE ASKERİ KRİTİK UYARI (MASTER CAUTION) -->
                 <div class="flex flex-col items-center">
-                    <div class="hud-center-visor px-4 sm:px-7 py-1 text-center min-w-[180px] sm:min-w-[260px]">
+                    <div class="hud-center-visor px-4 sm:px-7 py-1 text-center min-w-[195px] sm:min-w-[290px]">
                         <div class="flex items-center justify-center space-x-2 text-[8px] sm:text-[9px] font-mono text-cyan-300/80 tracking-widest">
                             <span>HDG <strong id="hudHeadingVal" class="text-cyan-200">090°</strong></span>
                             <span>•</span>
-                            <span id="hudWaveInfo" class="text-amber-300 font-bold">DALGA 01</span>
+                            <span id="hudWaveInfo" class="text-amber-300 font-bold">LVL 1/9</span>
                             <span>•</span>
                             <span>KILL <strong id="hudKillVal" class="text-emerald-300">00</strong></span>
+                            <span>•</span>
+                            <span class="text-rose-300 font-bold" title="Her 50.000 Puana 1 Devam Hakkı">HAK <strong id="hudContinueVal" class="text-amber-300">0</strong></span>
                         </div>
                         <div id="hudScore" class="font-orbitron text-lg sm:text-2xl font-black text-cyan-100 tracking-[0.16em] hud-glow-text leading-tight">000000</div>
                     </div>
@@ -475,62 +488,97 @@
                 </div>
             </div>
 
-            <!-- ALT KOKPİT KONTROL KUŞAĞI: MOBİL, TABLET VE MASAÜSTÜ İÇİN ERGONOMİK KANAT ROKETİ & SALVO BUTONLARI -->
-            <div class="w-full max-w-[1560px] mx-auto flex justify-between items-end pb-1 sm:pb-2 pointer-events-none">
+            <!-- ALT KOKPİT KONTROL KUŞAĞI: MOBİL, TABLET VE MASAÜSTÜ İÇİN ERGONOMİK KANAT ROKETİ, TURBO (W) & SALVO BUTONLARI -->
+            <div class="w-full max-w-[1560px] mx-auto flex justify-between items-end gap-1.5 pb-1 sm:pb-2 pointer-events-none">
                 
-                <!-- Sol Başparmak: Sol Kanat Roketi Ateşleme Tuşu (Mobil/Tablet ve PC uyumlu) -->
-                <button id="btnFireLeftMissile" class="pointer-events-auto tactical-fire-btn active:scale-90 text-cyan-100 rounded-2xl px-3.5 py-3 sm:px-5 sm:py-3.5 flex items-center space-x-2.5 transition select-none">
-                    <span class="text-xl sm:text-2xl">🚀</span>
-                    <div class="text-left">
-                        <div class="font-orbitron text-[10px] sm:text-xs font-black tracking-wider text-cyan-300">SOL ROKET</div>
-                        <div class="text-[9px] font-mono text-amber-300">L-PYLON [Q]</div>
-                    </div>
-                </button>
+                <!-- Sol Başparmak Grubu: Sol Kanat Roketi + Tablet/Telefon İçin W Süpersonik Turbo Tuşu -->
+                <div class="flex items-end gap-1.5 sm:gap-2.5 pointer-events-auto">
+                    <button id="btnFireLeftMissile" class="tactical-fire-btn active:scale-90 text-cyan-100 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-center space-x-2 transition select-none">
+                        <span class="text-lg sm:text-2xl">🚀</span>
+                        <div class="text-left">
+                            <div class="font-orbitron text-[9px] sm:text-xs font-black tracking-wider text-cyan-300">SOL ROKET</div>
+                            <div class="text-[8px] sm:text-[9px] font-mono text-amber-300">L-PYLON [Q]</div>
+                        </div>
+                    </button>
+
+                    <!-- TABLET VE TELEFONLAR İÇİN W TUŞU SÜPERSONİK ART YAKICI (AFTERBURNER TURBO) BUTONU -->
+                    <button id="btnTouchAfterburner" class="tactical-fire-btn active:scale-90 text-amber-100 border-amber-400/80 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-center space-x-1.5 transition select-none shadow-lg shadow-amber-500/20">
+                        <span class="text-lg sm:text-2xl">⚡</span>
+                        <div class="text-left">
+                            <div class="font-orbitron text-[9px] sm:text-xs font-black tracking-wider text-amber-300">TURBO İTKİ</div>
+                            <div class="text-[8px] sm:text-[9px] font-mono text-cyan-200">BASILI TUT [W]</div>
+                        </div>
+                    </button>
+                </div>
 
                 <!-- Orta Alt: Çift Pilon Güdümlü Salvo Tuşu -->
-                <button id="btnFireBothMissiles" class="pointer-events-auto tactical-salvo-btn active:scale-90 text-white rounded-2xl px-4 py-3 sm:px-6 sm:py-3.5 flex items-center space-x-2.5 transition select-none">
-                    <span class="text-xl sm:text-2xl">💥</span>
+                <button id="btnFireBothMissiles" class="pointer-events-auto tactical-salvo-btn active:scale-90 text-white rounded-2xl px-3.5 py-2.5 sm:px-6 sm:py-3.5 flex items-center space-x-2 transition select-none">
+                    <span class="text-lg sm:text-2xl">💥</span>
                     <div class="text-left">
-                        <div class="font-orbitron text-[11px] sm:text-xs font-black tracking-widest text-rose-200">ÇİFT SALVO</div>
-                        <div class="text-[9px] font-mono text-amber-300">GÜDÜMLÜ [SAĞ TIK]</div>
+                        <div class="font-orbitron text-[10px] sm:text-xs font-black tracking-widest text-rose-200">ÇİFT SALVO</div>
+                        <div class="text-[8px] sm:text-[9px] font-mono text-amber-300">6x SÜRÜ [SAĞ TIK]</div>
                     </div>
                 </button>
 
                 <!-- Sağ Başparmak: Sağ Kanat Roketi Ateşleme Tuşu -->
-                <button id="btnFireRightMissile" class="pointer-events-auto tactical-fire-btn active:scale-90 text-cyan-100 rounded-2xl px-3.5 py-3 sm:px-5 sm:py-3.5 flex items-center space-x-2.5 transition select-none">
+                <button id="btnFireRightMissile" class="pointer-events-auto tactical-fire-btn active:scale-90 text-cyan-100 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-center space-x-2 transition select-none">
                     <div class="text-right">
-                        <div class="font-orbitron text-[10px] sm:text-xs font-black tracking-wider text-cyan-300">SAĞ ROKET</div>
-                        <div class="text-[9px] font-mono text-amber-300">R-PYLON [E]</div>
+                        <div class="font-orbitron text-[9px] sm:text-xs font-black tracking-wider text-cyan-300">SAĞ ROKET</div>
+                        <div class="text-[8px] sm:text-[9px] font-mono text-amber-300">R-PYLON [E]</div>
                     </div>
-                    <span class="text-xl sm:text-2xl">🚀</span>
+                    <span class="text-lg sm:text-2xl">🚀</span>
                 </button>
             </div>
         </div>
 
-        <!-- 3. OYUN SONU MODAL EKRANI -->
-        <div id="gameOverModal" class="hidden absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-            <div class="bg-slate-900 border-2 border-cyan-500/60 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
-                <div id="modalIcon" class="w-16 h-16 mx-auto rounded-full bg-rose-500/20 border border-rose-500 flex items-center justify-center text-3xl">💥</div>
-                <h2 id="modalTitle" class="font-orbitron text-2xl font-black text-white tracking-wider">SORTİ SONA ERDİ!</h2>
-                <p id="modalReason" class="text-sm text-slate-300">Düşman füzeleri gövde bütünlüğünü sıfırladı.</p>
+        <!-- 3. ARCADE GAME OVER, 10 SANİYE GERİ SAYIM VE 50.000 PUANLA DEVAM ETME (CONTINUE) MODAL EKRANI -->
+        <div id="gameOverModal" class="hidden absolute inset-0 z-40 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="aaa-panel border-2 border-rose-500/80 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-rose-500/30 pb-2">
+                    <span id="modalModeTag" class="text-[10px] font-orbitron font-bold text-amber-300 bg-amber-500/15 border border-amber-400/40 px-2.5 py-0.5 rounded">ARCADE CAMPAIGN</span>
+                    <span id="modalLevelReached" class="text-xs font-orbitron font-black text-cyan-300">LEVEL 01 / 09</span>
+                </div>
+
+                <!-- Arcade Geri Sayım Sayacı ve Game Over Başlığı -->
+                <div id="countdownWrapper" class="py-1">
+                    <div class="text-[11px] font-orbitron font-bold text-rose-400 tracking-[0.25em] mb-1">CONTINUE COUNTDOWN</div>
+                    <div id="modalCountdownNum" class="font-orbitron text-6xl font-black text-amber-400 drop-shadow-[0_0_20px_rgba(251,191,36,0.7)]">9</div>
+                </div>
+
+                <h2 id="modalTitle" class="font-orbitron text-2xl sm:text-3xl font-black text-white tracking-widest hud-glow-text">GAME OVER</h2>
+                <p id="modalReason" class="text-xs sm:text-sm text-slate-300">Düşman füzeleri gövde bütünlüğünü sıfırladı.</p>
                 
-                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 grid grid-cols-2 gap-3 text-left">
+                <div class="bg-slate-950/90 rounded-xl p-3.5 border border-slate-800 grid grid-cols-3 gap-2 text-center">
                     <div>
-                        <div class="text-[10px] text-slate-500 font-bold">TOPLAM SKOR</div>
-                        <div id="modalScore" class="font-orbitron text-lg font-bold text-cyan-400">0</div>
+                        <div class="text-[9px] text-slate-400 font-bold">TOPLAM SKOR</div>
+                        <div id="modalScore" class="font-orbitron text-sm sm:text-base font-black text-cyan-400">0</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-slate-500 font-bold">VURULAN HEDEF</div>
-                        <div id="modalKills" class="font-orbitron text-lg font-bold text-amber-400">0</div>
+                        <div class="text-[9px] text-slate-400 font-bold">İMHA EDİLEN</div>
+                        <div id="modalKills" class="font-orbitron text-sm sm:text-base font-black text-amber-400">0</div>
+                    </div>
+                    <div>
+                        <div class="text-[9px] text-slate-400 font-bold">DEVAM HAKKI</div>
+                        <div id="modalContinueCredits" class="font-orbitron text-sm sm:text-base font-black text-emerald-400">0 HAK</div>
                     </div>
                 </div>
 
-                <div class="flex gap-3 pt-2">
-                    <button id="btnModalMenu" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-orbitron text-xs font-bold border border-slate-600 transition">
+                <!-- 50.000 Puan Karşılığı Kaldığı Yerden Devam Etme Bilgi Kutusu -->
+                <div id="continueInfoBox" class="bg-emerald-950/50 border border-emerald-500/50 rounded-xl p-2.5 text-xs text-emerald-200">
+                    Her <strong class="text-amber-300">50.000 Puan</strong> 1 Devam Hakkı kazandırır. Kaldığınız Level'dan devam edebilirsiniz!
+                </div>
+
+                <!-- Kaldığı Yerden Devam Et Butonu (Hakkı varsa aktif) -->
+                <button id="btnModalContinue" class="hidden w-full py-3.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 rounded-xl font-orbitron text-sm font-black tracking-wider shadow-lg shadow-emerald-500/30 transition transform active:scale-95">
+                    🪙 KALDIĞIN YERDEN DEVAM ET (1 HAK KULLAN)
+                </button>
+
+                <div class="flex gap-3 pt-1">
+                    <button id="btnModalMenu" class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-orbitron text-xs font-bold border border-slate-600 transition">
                         HANGARA DÖN
                     </button>
-                    <button id="btnModalRestart" class="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-lg font-orbitron text-xs font-bold shadow-lg shadow-cyan-500/30 transition">
-                        TEKRAR OYNA
+                    <button id="btnModalRestart" class="flex-1 py-3 bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white rounded-xl font-orbitron text-xs font-bold shadow-lg shadow-cyan-500/30 transition">
+                        BAŞTAN OYNA (LVL 1)
                     </button>
                 </div>
             </div>
@@ -1615,15 +1663,53 @@
         let camOffsetY = 0;
         let camTiltAngle = 0;
 
+        // OYUN MODU: 'ARCADE' (9 Level Seferberlik, Azalan Bonus, 50.000 Puana 1 Devam Hakkı) veya 'SIMULATION' (Serbest Sorti)
+        let gameMode = 'ARCADE';
+        const MAX_ARCADE_LEVELS = 9;
+        const POINTS_PER_CONTINUE = 50000;
+
         let score = 0;
         let kills = 0;
-        let waveNumber = 1;
-        let waveKillsNeeded = 14;
+        let waveNumber = 1; // Arcade modda Level 1..9
+        let waveKillsNeeded = 12;
         let currentWaveKills = 0;
+        let usedContinues = 0;
+        let continueCountdownVal = 9;
+        let continueCountdownInterval = null;
+        let touchBoostActive = false; // Tablet/Telefon W Turbo butonu basılı mı
+        let levelBannerTimer = 0;
+        let levelBannerTitle = "";
+        let levelBannerSub = "";
+
         let activeBoss = null;
         let spawnTimer = 0;
         let bonusTimer = 0;
         let lockedTargetOnReticle = null;
+
+        function getAvailableContinues() {
+            const totalEarned = Math.floor(score / POINTS_PER_CONTINUE);
+            return Math.max(0, totalEarned - usedContinues);
+        }
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            const btnArc = document.getElementById('btnSelectArcadeMode');
+            const btnSim = document.getElementById('btnSelectSimMode');
+            const badge = document.getElementById('menuModeBadge');
+            const desc = document.getElementById('menuModeDesc');
+
+            if (mode === 'ARCADE') {
+                if (btnArc) btnArc.className = "py-1.5 px-2 rounded-lg font-orbitron text-[10px] font-black tracking-wider border border-amber-400 bg-amber-500/20 text-amber-200 shadow-lg shadow-amber-500/10 transition";
+                if (btnSim) btnSim.className = "py-1.5 px-2 rounded-lg font-orbitron text-[10px] font-bold tracking-wider border border-slate-700 bg-slate-900/80 text-slate-400 hover:text-cyan-200 transition";
+                if (badge) badge.innerText = "9 LEVEL ARCADE";
+                if (desc) desc.innerHTML = `9 Haritada artan zorluk, azalan ikmal! Her <strong class="text-amber-300">50.000 Puan</strong> = 1 Devam Hakkı (Continue).`;
+            } else {
+                if (btnSim) btnSim.className = "py-1.5 px-2 rounded-lg font-orbitron text-[10px] font-black tracking-wider border border-cyan-400 bg-cyan-500/20 text-cyan-200 shadow-lg shadow-cyan-500/10 transition";
+                if (btnArc) btnArc.className = "py-1.5 px-2 rounded-lg font-orbitron text-[10px] font-bold tracking-wider border border-slate-700 bg-slate-900/80 text-slate-400 hover:text-amber-200 transition";
+                if (badge) badge.innerText = "SERBEST SİMÜLASYON";
+                if (desc) desc.innerHTML = `Seçtiğiniz haritada sınırsız dalga ve serbest uçuş antrenmanı.`;
+            }
+        }
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -1651,9 +1737,20 @@
             }
         }
 
+        function triggerLevelBanner(lvl, mapObj) {
+            levelBannerTimer = 170;
+            levelBannerTitle = gameMode === 'ARCADE' ? `ARCADE LEVEL 0${lvl} / 09` : `SORTİ DALGA 0${lvl}`;
+            levelBannerSub = `${mapObj.title} // İKMAL ORANI: %${Math.max(15, 100 - (lvl - 1) * 10)}`;
+        }
+
         function startGame() {
+            if (continueCountdownInterval) {
+                clearInterval(continueCountdownInterval);
+                continueCountdownInterval = null;
+            }
             gameState = 'PLAYING';
-            // Oyun başladığında üst barı gizle ki tam ekran kokpit görüşü sağlansın
+            touchBoostActive = false;
+
             document.getElementById('topHeaderBar').classList.add('hidden');
             resizeCanvas();
 
@@ -1665,12 +1762,6 @@
             crosshair.x = canvas.width / 2;
             crosshair.y = canvas.height * 0.40;
 
-            /**
-             * GERÇEKÇİ AVCI UÇAĞI FİZİK MODELİ:
-             * Uçak mouse imlecine yapışık değildir!
-             * Uçak kokpit kamerasının alt-orta bölgesinde uçar; nişangahın yönüne doğru yay-sönümleme (Spring-Damper),
-             * yatış (Roll Bank Angle) ve burun yunuslama (Pitch) fiziğiyle ağırlığını hissettirerek manevra yapar.
-             */
             player = {
                 plane: selectedPlane,
                 x: canvas.width / 2,
@@ -1698,7 +1789,7 @@
                 rightRecharge: 0,
                 rollAngle: 0,
                 pitchFactor: 0,
-                afterburnerBoost: 0, // W tuşuna basıldığında devreye giren Süpersonik Art Yakıcı (Afterburner) seviyesi
+                afterburnerBoost: 0,
                 shieldHitTimer: 0,
                 wingVortexHistoryL: [],
                 wingVortexHistoryR: []
@@ -1724,8 +1815,9 @@
             score = 0;
             kills = 0;
             waveNumber = 1;
-            waveKillsNeeded = 14;
+            waveKillsNeeded = 12;
             currentWaveKills = 0;
+            usedContinues = 0;
             activeBoss = null;
             spawnTimer = 0;
             bonusTimer = 0;
@@ -1733,11 +1825,46 @@
             document.getElementById('hudPlaneName').innerText = selectedPlane.name;
             document.getElementById('hudMapType').innerText = selectedMap.title.replace('DÜNYA: ', '').replace('İSTİLA: ', '');
             document.getElementById('bossHudContainer').classList.add('hidden');
+            triggerLevelBanner(waveNumber, selectedMap);
+            updateHUD();
+        }
+
+        // 50.000 Puan Karşılığı Kazanılan Hak İle Kaldığı Level ve Skordan Devam Etme
+        function continueFromCurrentLevel() {
+            if (getAvailableContinues() <= 0 || !player) return;
+            if (continueCountdownInterval) {
+                clearInterval(continueCountdownInterval);
+                continueCountdownInterval = null;
+            }
+
+            usedContinues++;
+            gameState = 'PLAYING';
+            touchBoostActive = false;
+            canvas.classList.add('arcade-crosshair');
+            document.getElementById('gameOverModal').classList.add('hidden');
+
+            // Uçağın tüm Can, Kalkan, Yakıt ve Roketlerini tam doldur, düşman füzelerini temizle
+            player.hp = player.maxHp;
+            player.shield = player.maxShield;
+            player.fuel = player.maxFuel;
+            player.leftMissiles = player.maxLeftMissiles;
+            player.rightMissiles = player.maxRightMissiles;
+            incomingMissiles = [];
+            cockpitDamageTimer = 0;
+
+            createExplosion(player.x, player.y, '#38bdf8', 32, true);
+            addFloatingText(player.x, player.y - 60, '⚡ YENİDEN DOĞUŞ // SİSTEMLER %100 AKTİF!', '#10b981');
+            playSound('bonus');
             updateHUD();
         }
 
         function stopToMenu() {
+            if (continueCountdownInterval) {
+                clearInterval(continueCountdownInterval);
+                continueCountdownInterval = null;
+            }
             gameState = 'MENU';
+            touchBoostActive = false;
             document.getElementById('topHeaderBar').classList.remove('hidden');
             resizeCanvas();
 
@@ -1748,13 +1875,76 @@
             initMenuUI();
         }
 
-        function triggerGameOver(reason) {
+        function triggerGameOver(reason, isVictory = false) {
+            if (continueCountdownInterval) {
+                clearInterval(continueCountdownInterval);
+                continueCountdownInterval = null;
+            }
             gameState = 'GAMEOVER';
+            touchBoostActive = false;
             canvas.classList.remove('arcade-crosshair');
-            document.getElementById('gameOverModal').classList.remove('hidden');
+
+            const modal = document.getElementById('gameOverModal');
+            modal.classList.remove('hidden');
+
+            const titleEl = document.getElementById('modalTitle');
+            const countdownWrap = document.getElementById('countdownWrapper');
+            const countdownNum = document.getElementById('modalCountdownNum');
+            const btnContinue = document.getElementById('btnModalContinue');
+            const infoBox = document.getElementById('continueInfoBox');
+            const creditsEl = document.getElementById('modalContinueCredits');
+            const lvlEl = document.getElementById('modalLevelReached');
+            const modeTag = document.getElementById('modalModeTag');
+
+            const availableCredits = getAvailableContinues();
+            const pointsToNext = POINTS_PER_CONTINUE - (score % POINTS_PER_CONTINUE);
+
+            if (modeTag) modeTag.innerText = gameMode === 'ARCADE' ? '9 LEVEL ARCADE CAMPAIGN' : 'SERBEST SİMÜLASYON';
+            if (lvlEl) lvlEl.innerText = gameMode === 'ARCADE' ? `LEVEL 0${waveNumber} / 0${MAX_ARCADE_LEVELS}` : `DALGA 0${waveNumber}`;
             document.getElementById('modalReason').innerText = reason;
-            document.getElementById('modalScore').innerText = score;
+            document.getElementById('modalScore').innerText = score.toLocaleString('tr-TR');
             document.getElementById('modalKills').innerText = kills;
+            if (creditsEl) creditsEl.innerText = `${availableCredits} HAK`;
+
+            if (isVictory) {
+                titleEl.innerText = "🏆 ZAFER // 9 LEVEL TAMAMLANDI!";
+                titleEl.className = "font-orbitron text-xl sm:text-2xl font-black text-amber-300 tracking-wider hud-glow-text";
+                countdownWrap.classList.add('hidden');
+                btnContinue.classList.add('hidden');
+                infoBox.innerHTML = `Tebrikler Komutan! Tüm 9 Operasyon Cephesini ve Boss Filolarını imha ettiniz!`;
+                return;
+            }
+
+            titleEl.innerText = "GAME OVER";
+            titleEl.className = "font-orbitron text-2xl sm:text-3xl font-black text-rose-500 tracking-widest hud-glow-text";
+            countdownWrap.classList.remove('hidden');
+
+            if (availableCredits > 0) {
+                btnContinue.classList.remove('hidden');
+                btnContinue.innerText = `🪙 KALDIĞIN YERDEN DEVAM ET (${availableCredits} HAK MEVCUT)`;
+                infoBox.innerHTML = `<strong class="text-emerald-300">DEVAM HAKKINIZ VAR!</strong> Geri sayım bitmeden <strong class="text-amber-300">Level 0${waveNumber}</strong>'den savaşa devam edebilirsiniz.`;
+            } else {
+                btnContinue.classList.add('hidden');
+                infoBox.innerHTML = `Kaldığınız yerden devam hakkı için her <strong class="text-amber-300">50.000 Puan</strong> gerekir.<br><span class="text-slate-400">Sonraki hak için gereken: ${pointsToNext.toLocaleString('tr-TR')} Puan.</span>`;
+            }
+
+            // 9'dan 0'a Klasik Arcade Geri Sayım Sayacı
+            continueCountdownVal = 9;
+            countdownNum.innerText = continueCountdownVal;
+            continueCountdownInterval = setInterval(() => {
+                continueCountdownVal--;
+                if (continueCountdownVal >= 0) {
+                    countdownNum.innerText = continueCountdownVal;
+                    playSound('warningBeep');
+                }
+                if (continueCountdownVal <= 0) {
+                    clearInterval(continueCountdownInterval);
+                    continueCountdownInterval = null;
+                    btnContinue.classList.add('hidden');
+                    countdownNum.innerText = "0";
+                    infoBox.innerHTML = `<span class="text-rose-400 font-bold">SÜRE DOLDU // SORTİ KAYDEDİLDİ.</span> Yeniden başlayabilir veya hangara dönebilirsiniz.`;
+                }
+            }, 1000);
         }
 
         /**
@@ -2006,10 +2196,21 @@
             document.getElementById('hudFuelBar').style.width = `${fuelPct}%`;
 
             document.getElementById('hudScore').innerText = String(score).padStart(6, '0');
-            document.getElementById('hudWaveInfo').innerText = activeBoss
-                ? `DALGA 0${waveNumber} // BOSS`
-                : `DALGA 0${waveNumber} (${currentWaveKills}/${waveKillsNeeded})`;
+            if (gameMode === 'ARCADE') {
+                document.getElementById('hudWaveInfo').innerText = activeBoss
+                    ? `LVL ${waveNumber}/9 // BOSS`
+                    : `LVL ${waveNumber}/9 (${currentWaveKills}/${waveKillsNeeded})`;
+            } else {
+                document.getElementById('hudWaveInfo').innerText = activeBoss
+                    ? `DALGA 0${waveNumber} // BOSS`
+                    : `DALGA 0${waveNumber} (${currentWaveKills}/${waveKillsNeeded})`;
+            }
             document.getElementById('hudWeaponLevel').innerText = `MK-${player.weaponLevel} VULCAN`;
+
+            const contEl = document.getElementById('hudContinueVal');
+            if (contEl) {
+                contEl.innerText = getAvailableContinues();
+            }
 
             const hdgEl = document.getElementById('hudHeadingVal');
             if (hdgEl) {
@@ -2066,15 +2267,15 @@
         function updateGame() {
             if (gameState !== 'PLAYING' || !player) return;
 
-            // 1. Klavye + Fare / Dokunmatik Kontrolleri & DÜZELTME 3: W Tuşu Süpersonik Art Yakıcı (Afterburner Boost) Manevrası!
+            // 1. Klavye + Fare / Dokunmatik Kontrolleri & W Tuşu / Tablet Turbo Tuşu Süpersonik Art Yakıcı (Afterburner Boost) Manevrası!
             const moveStep = player.speed * 1.25;
             if (keys['ArrowLeft'] || keys['KeyA']) crosshair.x -= moveStep;
             if (keys['ArrowRight'] || keys['KeyD']) crosshair.x += moveStep;
             if (keys['ArrowUp']) crosshair.y -= moveStep;
             if (keys['ArrowDown']) crosshair.y += moveStep;
 
-            // W Tuşuna basıldığında uçak Süpersonik Art Yakıcı (Afterburner Turbo) açar, S tuşuna basıldığında Hava Freni (Airbrake) yapar
-            const isBoosting = !!(keys['KeyW'] || keys['ArrowUp']);
+            // Klavyede W / Yukarı Ok VEYA Tablette "⚡ TURBO İTKİ" butonuna basıldığında uçak Süpersonik Art Yakıcı açar
+            const isBoosting = !!(keys['KeyW'] || keys['ArrowUp'] || touchBoostActive);
             const isBraking = !!(keys['KeyS'] || keys['ArrowDown']);
 
             if (isBoosting) {
@@ -2085,6 +2286,7 @@
             } else {
                 player.afterburnerBoost += (0 - player.afterburnerBoost) * 0.08;
             }
+            if (levelBannerTimer > 0) levelBannerTimer--;
 
             crosshair.x = Math.max(40, Math.min(canvas.width - 40, crosshair.x));
             crosshair.y = Math.max(55, Math.min(canvas.height - 75, crosshair.y));
@@ -2290,17 +2492,22 @@
                 }
             }
 
-            // 9. Düşman Dalga ve Boss Üretimi
+            // 9. Düşman Dalga ve Boss Üretimi (Leveller İlerledikçe Zorlaşır, Bonuslar Daha Az Gelir!)
             spawnTimer++;
+            const maxConcurrentEnemies = Math.min(10, 5 + Math.floor(waveNumber * 0.7));
+            const spawnInterval = Math.max(24, 78 - waveNumber * 6);
+
             if (!activeBoss && currentWaveKills >= waveKillsNeeded) {
                 spawnBoss();
-            } else if (!activeBoss && targets.length < 6 && spawnTimer >= Math.max(36, 78 - waveNumber * 5)) {
+            } else if (!activeBoss && targets.length < maxConcurrentEnemies && spawnTimer >= spawnInterval) {
                 spawnTarget();
                 spawnTimer = 0;
             }
 
+            // Leveller ilerledikçe rastgele bonus çıkma süresi uzar (Bonuslar daha az gelir: Level 1'de ~300 kare, Level 9'da ~860 kare)
             bonusTimer++;
-            if (bonusTimer >= 310) {
+            const dynamicBonusInterval = 290 + (waveNumber - 1) * 72;
+            if (bonusTimer >= dynamicBonusInterval) {
                 spawnBonus();
                 bonusTimer = 0;
             }
@@ -2499,24 +2706,46 @@
                     createExplosion(renderX, renderY, '#38bdf8', 5);
 
                     if (t.hp <= 0) {
+                        const prevContinues = Math.floor(score / POINTS_PER_CONTINUE);
                         score += t.score;
+                        const newContinues = Math.floor(score / POINTS_PER_CONTINUE);
+                        if (newContinues > prevContinues) {
+                            addFloatingText(player.x, player.y - 95, '🪙 +1 DEVAM HAKKI KAZANILDI (50.000 PUAN)!', '#10b981');
+                            playSound('bonus');
+                        }
+
                         kills++;
                         currentWaveKills++;
                         createExplosion(renderX, renderY, t.color, t.isBoss ? 55 : 28, true);
                         addFloatingText(renderX, renderY - 20, t.isBoss ? '💥 BOSS İMHA EDİLDİ!' : `+${t.score} İMHA!`, '#fde047');
                         playSound('explosion');
 
-                        if (t.isBoss || Math.random() < 0.34) {
+                        // Leveller ilerledikçe vurulan düşmandan bonus düşme ihtimali azalır (Level 1: %35 -> Level 9: %10)
+                        const dropChance = Math.max(0.10, 0.36 - (waveNumber - 1) * 0.032);
+                        if (t.isBoss || Math.random() < dropChance) {
                             spawnBonus(t.x, t.y);
                         }
 
                         if (t.isBoss) {
                             activeBoss = null;
                             document.getElementById('bossHudContainer').classList.add('hidden');
+
+                            // ARCADE MODDA 9 LEVEL KONTROLÜ VE OTOMATİK CEBHE İLERLEMESİ
+                            if (gameMode === 'ARCADE' && waveNumber >= MAX_ARCADE_LEVELS) {
+                                triggerGameOver('Tebrikler! 9 Zorlu Arcade Seviyesinin tamamını zaferle tamamladınız!', true);
+                                return;
+                            }
+
                             waveNumber++;
                             currentWaveKills = 0;
-                            waveKillsNeeded += 5;
-                            addFloatingText(canvas.width / 2, canvas.height * 0.35, `SORTİ DALGA 0${waveNumber} BAŞLADI!`, '#fbbf24');
+                            waveKillsNeeded = 12 + (waveNumber - 1) * 4;
+
+                            // Arcade modda her yeni Level'da 9 haritadan sıradakine geçiş yapılır
+                            if (gameMode === 'ARCADE') {
+                                selectedMap = GAME_MAPS[(waveNumber - 1) % GAME_MAPS.length];
+                                document.getElementById('hudMapType').innerText = selectedMap.title.replace('DÜNYA: ', '').replace('İSTİLA: ', '');
+                            }
+                            triggerLevelBanner(waveNumber, selectedMap);
                         }
                         targets.splice(i, 1);
                     }
@@ -2996,6 +3225,34 @@
                 ctx.fillText('LOCK // SHOOT', 0, 36);
             }
             ctx.restore();
+
+            // 12. YENİ LEVEL / CEBHE GEÇİŞ SİNEMATİK BİLGİ AFİŞİ
+            if (levelBannerTimer > 0) {
+                const bAlpha = Math.min(1, levelBannerTimer / 35);
+                ctx.save();
+                ctx.globalAlpha = bAlpha;
+                ctx.fillStyle = 'rgba(2, 12, 27, 0.78)';
+                ctx.strokeStyle = 'rgba(0, 240, 255, 0.65)';
+                ctx.lineWidth = 1.5;
+                const bw = Math.min(460, canvas.width * 0.86);
+                const bh = 68;
+                const bx = (canvas.width - bw) / 2;
+                const by = canvas.height * 0.20;
+                ctx.beginPath();
+                ctx.roundRect(bx, by, bw, bh, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.font = '900 20px Orbitron, sans-serif';
+                ctx.fillStyle = '#fbbf24';
+                ctx.textAlign = 'center';
+                ctx.fillText(levelBannerTitle, canvas.width / 2, by + 30);
+
+                ctx.font = '700 11px Orbitron, monospace';
+                ctx.fillStyle = '#67e8f9';
+                ctx.fillText(levelBannerSub, canvas.width / 2, by + 52);
+                ctx.restore();
+            }
         }
 
         function gameLoop() {
@@ -3086,6 +3343,35 @@
             fireWingMissile('left');
             fireWingMissile('right');
         });
+
+        // Tablet ve Telefonlar İçin W Tuşu Süpersonik Turbo (Afterburner) Dokunmatik Tuş Bağlantısı
+        const btnTouchTurbo = document.getElementById('btnTouchAfterburner');
+        if (btnTouchTurbo) {
+            const startTurbo = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                touchBoostActive = true;
+            };
+            const endTurbo = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                touchBoostActive = false;
+            };
+            btnTouchTurbo.addEventListener('touchstart', startTurbo, { passive: false });
+            btnTouchTurbo.addEventListener('touchend', endTurbo, { passive: false });
+            btnTouchTurbo.addEventListener('touchcancel', endTurbo, { passive: false });
+            btnTouchTurbo.addEventListener('mousedown', startTurbo);
+            window.addEventListener('mouseup', () => { touchBoostActive = false; });
+        }
+
+        // Oyun Modu Seçim Tuşları ve Game Over / Continue Tuşları
+        const btnArcMode = document.getElementById('btnSelectArcadeMode');
+        const btnSimMode = document.getElementById('btnSelectSimMode');
+        if (btnArcMode) btnArcMode.addEventListener('click', () => setGameMode('ARCADE'));
+        if (btnSimMode) btnSimMode.addEventListener('click', () => setGameMode('SIMULATION'));
+
+        const btnContinue = document.getElementById('btnModalContinue');
+        if (btnContinue) btnContinue.addEventListener('click', continueFromCurrentLevel);
 
         document.getElementById('btnStartGame').addEventListener('click', startGame);
         document.getElementById('btnBackToMenu').addEventListener('click', stopToMenu);
