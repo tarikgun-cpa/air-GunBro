@@ -142,14 +142,32 @@
             animation: scanlineMove 4.5s linear infinite;
         }
         .sortie-launch-btn {
-            background: linear-gradient(95deg, #0284c7 0%, #2563eb 45%, #e11d48 100%);
-            box-shadow: 0 0 28px rgba(56, 189, 248, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            background: linear-gradient(135deg, #0284c7 0%, #1d4ed8 45%, #be123c 100%);
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.45), inset 0 2px 2px rgba(255, 255, 255, 0.45);
             position: relative;
             overflow: hidden;
         }
+        .sortie-launch-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -60%; width: 40%; height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+            transform: rotate(25deg);
+            animation: btnShine 3.2s infinite;
+        }
+        @keyframes btnShine {
+            0% { left: -60%; }
+            35%, 100% { left: 130%; }
+        }
         .sortie-launch-btn:hover {
-            box-shadow: 0 0 36px rgba(244, 63, 94, 0.65), 0 0 20px rgba(56, 189, 248, 0.6);
-            filter: brightness(1.12);
+            box-shadow: 0 0 42px rgba(244, 63, 94, 0.75), 0 0 24px rgba(56, 189, 248, 0.7);
+            filter: brightness(1.15);
+            transform: translateY(-2px);
+        }
+        .commendation-gold-card {
+            background: linear-gradient(160deg, rgba(15, 23, 42, 0.97) 0%, rgba(7, 11, 24, 0.99) 55%, rgba(30, 20, 10, 0.96) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.75);
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.25), inset 0 0 25px rgba(251, 191, 36, 0.12);
         }
     </style>
 </head>
@@ -226,10 +244,10 @@
                     <div class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-amber-300 z-20 pointer-events-none"></div>
                 </div>
 
-                <!-- ALT: OYUN MODU SEÇİMİ (9 LEVEL ARCADE CAMPAIGN / SERBEST SİMÜLASYON) & SORTİ ÖZETİ -->
-                <div class="mt-2.5 bg-slate-950/95 border border-cyan-500/35 rounded-xl p-2.5 shrink-0 space-y-2">
+                <!-- ALT: OYUN MODU & 3 KADEMELİ ZORLUK SEÇİMİ -->
+                <div class="mt-2 bg-slate-950/95 border border-cyan-500/35 rounded-xl p-2.5 shrink-0 space-y-2">
                     <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 border-b border-slate-800 pb-1">
-                        <span>OPERASYON MODU SEÇİMİ //</span>
+                        <span>OPERASYON MODU //</span>
                         <span id="menuModeBadge" class="text-amber-300 font-bold font-orbitron">9 LEVEL ARCADE</span>
                     </div>
                     <div class="grid grid-cols-2 gap-1.5">
@@ -240,16 +258,32 @@
                             🌐 SERBEST SİM
                         </button>
                     </div>
-                    <p id="menuModeDesc" class="text-[10px] text-slate-300 leading-tight">
-                        9 Haritada artan zorluk, azalan ikmal! Her <strong class="text-amber-300">50.000 Puan</strong> = 1 Devam Hakkı (Continue).
-                    </p>
-                    <div class="flex justify-between items-center text-[11px] pt-1 border-t border-slate-800/80">
-                        <span class="text-slate-400 font-semibold">SEÇİLİ AVCI:</span>
-                        <span id="selectedPlaneBadge" class="font-orbitron font-black text-cyan-300 bg-cyan-500/15 border border-cyan-400/50 px-2 py-0.5 rounded">Avcı_Kaan</span>
+
+                    <!-- ZORLUK SEÇİMİ (ÇAYLAK / PİLOT / EFSANE AS) -->
+                    <div class="pt-1 border-t border-slate-800/80">
+                        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mb-1">
+                            <span>ZORLUK DERECESİ:</span>
+                            <span id="selectedDifficultyBadge" class="text-cyan-300 font-bold font-orbitron">SAVAŞ PİLOTU (NORMAL)</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button id="btnDiffRookie" class="py-1 px-1.5 rounded font-orbitron text-[9px] font-bold border border-slate-700 bg-slate-900 text-slate-400 transition">
+                                🟢 ÇAYLAK
+                            </button>
+                            <button id="btnDiffVeteran" class="py-1 px-1.5 rounded font-orbitron text-[9px] font-black border border-cyan-400 bg-cyan-500/20 text-cyan-200 shadow transition">
+                                🟡 PİLOT
+                            </button>
+                            <button id="btnDiffAce" class="py-1 px-1.5 rounded font-orbitron text-[9px] font-bold border border-slate-700 bg-slate-900 text-slate-400 transition">
+                                🔴 EFSANE AS
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex justify-between items-center text-[11px]">
-                        <span class="text-slate-400 font-semibold">BAŞLANGIÇ CEPHESİ:</span>
-                        <span id="selectedMapBadge" class="font-orbitron font-black text-amber-300 bg-amber-500/15 border border-amber-400/50 px-2 py-0.5 rounded">Dunya_Okyanus</span>
+
+                    <p id="menuModeDesc" class="text-[10px] text-slate-300 leading-tight">
+                        Dünya'dan başlayıp İstila ile biten 9 zorlu cephe! Her <strong class="text-amber-300">50.000 Puan</strong> = 1 Devam Hakkı.
+                    </p>
+                    <div class="flex justify-between items-center text-[10px] pt-1 border-t border-slate-800/80">
+                        <span class="text-slate-400">AVCI: <strong id="selectedPlaneBadge" class="font-orbitron text-cyan-300">Avcı_Kaan</strong></span>
+                        <span class="text-slate-400">CEBHE: <strong id="selectedMapBadge" class="font-orbitron text-amber-300">Dunya_Okyanus</strong></span>
                     </div>
                 </div>
             </div>
@@ -370,8 +404,21 @@
                         </div>
                     </div>
 
-                    <button id="btnStartGame" class="w-full py-3.5 sortie-launch-btn text-white font-orbitron font-black text-sm sm:text-base tracking-[0.16em] rounded-xl border border-cyan-300/80 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
-                        <span>✈️ SAVAŞ SORTİSİNİ BAŞLAT // SCRAMBLE</span>
+                    <button id="btnStartGame" class="w-full py-3 sortie-launch-btn text-white rounded-xl border-2 border-cyan-300/90 transition transform active:scale-95 flex items-center justify-between px-5 group">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-slate-950/60 border border-amber-300/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+                                <svg class="w-6 h-6 text-amber-300 transform rotate-45 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                                </svg>
+                            </div>
+                            <div class="text-left">
+                                <div class="font-orbitron font-black text-lg sm:text-xl tracking-[0.22em] text-white drop-shadow">SAVAŞA BAŞLA</div>
+                                <div class="text-[9px] font-mono text-cyan-200 tracking-[0.25em] uppercase">KOKPİT ATEŞLEME // HAZIR</div>
+                            </div>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-white/15 border border-white/40 flex items-center justify-center font-orbitron text-sm font-black text-amber-300 group-hover:translate-x-1 transition">
+                            ▶▶
+                        </div>
                     </button>
                 </div>
             </div>
@@ -584,6 +631,69 @@
             </div>
         </div>
 
+        <!-- 4. OYUN BİTİŞİ: LOGOLU ÜSTÜN HİZMET MEKTUBU & MADALYA TÖRENİ EKRANI -->
+        <div id="victoryModal" class="hidden absolute inset-0 z-50 bg-slate-950/92 backdrop-blur-lg flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+            <div class="commendation-gold-card rounded-2xl max-w-3xl w-full p-5 sm:p-7 text-left relative overflow-hidden my-auto">
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    
+                    <!-- Sol: Air Logo.jpg Resmi Sancak ve Madalya Nişanı -->
+                    <div class="w-44 sm:w-52 shrink-0 flex flex-col items-center">
+                        <div class="w-full h-64 rounded-xl border-2 border-amber-400 bg-slate-950 overflow-hidden shadow-[0_0_25px_rgba(251,191,36,0.3)] relative">
+                            <img id="victoryLogoImg" src="./Air%20Logo.jpg" alt="AIR GUN Logo" class="w-full h-full object-contain">
+                        </div>
+                        <div id="victoryMedalBadge" class="mt-3 w-full py-2 px-3 rounded-xl bg-amber-500/20 border border-amber-400 text-center">
+                            <div id="victoryMedalIcon" class="text-2xl">🎖️</div>
+                            <div id="victoryMedalTitle" class="font-orbitron text-[10px] font-black text-amber-300 tracking-wider mt-0.5">ÜSTÜN HİZMET NİŞANI</div>
+                        </div>
+                    </div>
+
+                    <!-- Sağ: Resmi Üstün Hizmet Mektubu ve Üst Zorluğa Teşvik -->
+                    <div class="flex-1 space-y-3.5">
+                        <div class="border-b border-amber-400/40 pb-2 flex items-center justify-between">
+                            <div>
+                                <div class="text-[10px] font-mono text-amber-300 tracking-[0.25em]">TÜRK HAVA KOMUTANLIĞI // RESMİ BERAT</div>
+                                <h2 id="victoryHeaderTitle" class="font-orbitron text-xl sm:text-2xl font-black text-white tracking-wider mt-0.5">ÜSTÜN HİZMET MEKTUBU</h2>
+                            </div>
+                            <span id="victoryDifficultyStamp" class="px-2.5 py-1 rounded bg-cyan-500/20 border border-cyan-400 text-cyan-200 font-orbitron text-[10px] font-black">PİLOT MODU</span>
+                        </div>
+
+                        <!-- Mektup Metni -->
+                        <div id="victoryLetterBody" class="bg-slate-950/85 border border-slate-800 rounded-xl p-3.5 text-xs sm:text-sm text-slate-200 leading-relaxed space-y-2 font-sans">
+                        </div>
+
+                        <!-- İstatistik Özeti -->
+                        <div class="grid grid-cols-3 gap-2 bg-slate-900/90 border border-amber-500/30 rounded-xl p-2.5 text-center">
+                            <div>
+                                <div class="text-[9px] text-slate-400 font-bold">TOPLAM SKOR</div>
+                                <div id="victoryScoreVal" class="font-orbitron text-sm sm:text-base font-black text-amber-300">0</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-slate-400 font-bold">İMHA EDİLEN</div>
+                                <div id="victoryKillsVal" class="font-orbitron text-sm sm:text-base font-black text-cyan-300">0</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-slate-400 font-bold">PİLOT UÇAĞI</div>
+                                <div id="victoryPlaneVal" class="font-orbitron text-xs sm:text-sm font-black text-emerald-300 truncate">KAAN</div>
+                            </div>
+                        </div>
+
+                        <!-- Üst Zorluk Teşvik Kutusu -->
+                        <div id="victoryNextChallengeBox" class="bg-rose-950/50 border border-rose-500/60 rounded-xl p-3 text-xs text-rose-200">
+                        </div>
+
+                        <div class="flex flex-wrap gap-2.5 pt-1">
+                            <button id="btnVictoryNextDifficulty" class="flex-1 py-3 px-4 bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 hover:brightness-110 text-slate-950 rounded-xl font-orbitron text-xs font-black tracking-wider shadow-lg transition">
+                                🔥 ÜST ZORLUKTA SAVAŞA BAŞLA
+                            </button>
+                            <button id="btnVictoryMenu" class="py-3 px-5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-orbitron text-xs font-bold border border-slate-600 transition">
+                                HANGARA DÖN
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- FIREBASE BAĞLANTISI VE GELİŞMİŞ UÇUŞ SİMÜLASYONU KODU -->
@@ -669,15 +779,17 @@
         ];
 
         const GAME_MAPS = [
-            { id: 'İstila_Uzay', title: 'İSTİLA: DERİN UZAY', type: 'istila', desc: 'Yörünge üzerinde uzaylı istila filosuna karşı savunma', skyTop: '#020617', skyHorizon: '#1e1b4b', groundColor: '#090d16' },
-            { id: 'İstila_Okyanus', title: 'İSTİLA: OKYANUS', type: 'istila', desc: 'Yanan okyanus üzerinde uzaylı kruvazör savaşı', skyTop: '#0f172a', skyHorizon: '#4c0519', groundColor: '#082f49' },
-            { id: 'İstila_city', title: 'İSTİLA: METROPOL', type: 'istila', desc: 'Kuşatma altındaki metropol semalarında sıcak çatışma', skyTop: '#18181b', skyHorizon: '#431407', groundColor: '#1c1917' },
-            { id: 'Dunya_Okyanus', title: 'DÜNYA: AÇIK OKYANUS', type: 'dunya', desc: 'Güneş batımında açık okyanus üzerinde hava savaşı', skyTop: '#0369a1', skyHorizon: '#f59e0b', groundColor: '#0c4a6e' },
-            { id: 'Dunya_OkyanusDonanma', title: 'DÜNYA: DONANMA FİLOSU', type: 'dunya', desc: 'Açık denizdeki donanma görev gücü üzerinde çatışma', skyTop: '#1e3a8a', skyHorizon: '#38bdf8', groundColor: '#082f49' },
-            { id: 'Dunya_OkyanusKara', title: 'DÜNYA: KIYI & KARA', type: 'dunya', desc: 'Kıyı şeridi ve kara hedefleri üzerinde taarruz', skyTop: '#0284c7', skyHorizon: '#fde047', groundColor: '#365314' },
-            { id: 'Dunya_OkyanusCity', title: 'DÜNYA: KIYI ŞEHRİ', type: 'dunya', desc: 'Kıyı metropolü ve gökdelenler üzerinde önleme', skyTop: '#1d4ed8', skyHorizon: '#fb923c', groundColor: '#1e293b' },
-            { id: 'Dunya_OkyanusKutup', title: 'DÜNYA: KUTUP BÖLGESİ', type: 'dunya', desc: 'Buzullar ve kutup semalarında stratejik sorti', skyTop: '#0284c7', skyHorizon: '#e0f2fe', groundColor: '#bae6fd' },
-            { id: 'Dunya_OkyanusÇöl', title: 'DÜNYA: ÇÖL FIRTINASI', type: 'dunya', desc: 'Kızgın çöl ufku üzerinde süpersonik it dalaşı', skyTop: '#7c2d12', skyHorizon: '#fbbf24', groundColor: '#9a3412' }
+            // LEVEL 1 - 6: DÜNYA HAVA MUHAREBESİ ETAPLARI
+            { id: 'Dunya_Okyanus', title: 'ETAP 1 // DÜNYA: AÇIK OKYANUS', type: 'dunya', desc: 'Güneş batımında açık okyanus üzerinde ilk sorti', skyTop: '#0369a1', skyHorizon: '#f59e0b', groundColor: '#0c4a6e' },
+            { id: 'Dunya_OkyanusDonanma', title: 'ETAP 2 // DÜNYA: DONANMA FİLOSU', type: 'dunya', desc: 'Açık denizdeki donanma görev gücü üzerinde çatışma', skyTop: '#1e3a8a', skyHorizon: '#38bdf8', groundColor: '#082f49' },
+            { id: 'Dunya_OkyanusKara', title: 'ETAP 3 // DÜNYA: KIYI & KARA', type: 'dunya', desc: 'Kıyı şeridi ve kara hedefleri üzerinde taarruz', skyTop: '#0284c7', skyHorizon: '#fde047', groundColor: '#365314' },
+            { id: 'Dunya_OkyanusCity', title: 'ETAP 4 // DÜNYA: KIYI ŞEHRİ', type: 'dunya', desc: 'Kıyı metropolü ve gökdelenler üzerinde önleme', skyTop: '#1d4ed8', skyHorizon: '#fb923c', groundColor: '#1e293b' },
+            { id: 'Dunya_OkyanusKutup', title: 'ETAP 5 // DÜNYA: KUTUP BÖLGESİ', type: 'dunya', desc: 'Buzullar ve kutup semalarında stratejik sorti', skyTop: '#0284c7', skyHorizon: '#e0f2fe', groundColor: '#bae6fd' },
+            { id: 'Dunya_OkyanusÇöl', title: 'ETAP 6 // DÜNYA: ÇÖL FIRTINASI', type: 'dunya', desc: 'Kızgın çöl ufku üzerinde süpersonik it dalaşı', skyTop: '#7c2d12', skyHorizon: '#fbbf24', groundColor: '#9a3412' },
+            // LEVEL 7 - 9: UZAY İSTİLASI FİNAL ETAPLARI
+            { id: 'İstila_city', title: 'ETAP 7 // İSTİLA: METROPOL', type: 'istila', desc: 'Kuşatma altındaki metropol semalarında uzaylı istilası', skyTop: '#18181b', skyHorizon: '#431407', groundColor: '#1c1917' },
+            { id: 'İstila_Okyanus', title: 'ETAP 8 // İSTİLA: OKYANUS', type: 'istila', desc: 'Yanan okyanus üzerinde uzaylı kruvazör savaşı', skyTop: '#0f172a', skyHorizon: '#4c0519', groundColor: '#082f49' },
+            { id: 'İstila_Uzay', title: 'ETAP 9 // İSTİLA: DERİN UZAY', type: 'istila', desc: 'Yörünge üzerinde uzaylı ana istila filosuna karşı final savaşı', skyTop: '#020617', skyHorizon: '#1e1b4b', groundColor: '#090d16' }
         ];
 
         const ENEMY_POOLS = {
@@ -1663,15 +1775,83 @@
         let camOffsetY = 0;
         let camTiltAngle = 0;
 
-        // OYUN MODU: 'ARCADE' (9 Level Seferberlik, Azalan Bonus, 50.000 Puana 1 Devam Hakkı) veya 'SIMULATION' (Serbest Sorti)
         let gameMode = 'ARCADE';
         const MAX_ARCADE_LEVELS = 9;
         const POINTS_PER_CONTINUE = 50000;
 
+        // 3 KADEMELİ ZORLUK SİSTEMİ (5 dakikada bitmemesi ve sıkmaması için özel kalibre edildi)
+        const DIFFICULTY_SETTINGS = {
+            ROOKIE: {
+                id: 'ROOKIE',
+                name: 'ÇAYLAK PİLOT',
+                shortName: 'ÇAYLAK',
+                baseKills: 20,          // Level 1'de 20 hedef, Level 9'da 68 hedef
+                killsPerLevel: 6,
+                enemyHpMult: 1.05,
+                bossHpMult: 1.25,
+                enemySpeedMult: 0.92,
+                enemyDamageMult: 0.85,
+                fireRateMult: 1.15,     // Düşman daha seyrek ateş eder
+                missileRechargeFrames: 140,
+                bonusIntervalBase: 320,
+                nextDiff: 'VETERAN',
+                nextDiffName: 'SAVAŞ PİLOTU (NORMAL)'
+            },
+            VETERAN: {
+                id: 'VETERAN',
+                name: 'SAVAŞ PİLOTU',
+                shortName: 'PİLOT',
+                baseKills: 26,          // Level 1'de 26 hedef, Level 9'da 82 hedef (İdeal 15-20 dk sürükleyici tempo)
+                killsPerLevel: 7,
+                enemyHpMult: 1.45,
+                bossHpMult: 1.75,
+                enemySpeedMult: 1.12,
+                enemyDamageMult: 1.15,
+                fireRateMult: 0.90,
+                missileRechargeFrames: 175,
+                bonusIntervalBase: 390,
+                nextDiff: 'ACE',
+                nextDiffName: 'EFSANE AS PİLOT (ZOR)'
+            },
+            ACE: {
+                id: 'ACE',
+                name: 'EFSANE AS PİLOT',
+                shortName: 'EFSANE AS',
+                baseKills: 32,          // Level 1'de 32 hedef, Level 9'da 96 hedef
+                killsPerLevel: 8,
+                enemyHpMult: 1.90,
+                bossHpMult: 2.35,
+                enemySpeedMult: 1.30,
+                enemyDamageMult: 1.45,
+                fireRateMult: 0.72,     // Düşman çok agresif füze atar
+                missileRechargeFrames: 210,
+                bonusIntervalBase: 470,
+                nextDiff: null,
+                nextDiffName: null
+            }
+        };
+        let currentDifficulty = DIFFICULTY_SETTINGS.VETERAN;
+
+        function setDifficulty(diffKey) {
+            if (!DIFFICULTY_SETTINGS[diffKey]) return;
+            currentDifficulty = DIFFICULTY_SETTINGS[diffKey];
+            const badge = document.getElementById('selectedDifficultyBadge');
+            if (badge) badge.innerText = currentDifficulty.name;
+
+            const btnR = document.getElementById('btnDiffRookie');
+            const btnV = document.getElementById('btnDiffVeteran');
+            const btnA = document.getElementById('btnDiffAce');
+            const inactiveClass = "py-1 px-1.5 rounded font-orbitron text-[9px] font-bold border border-slate-700 bg-slate-900 text-slate-400 hover:text-white transition";
+
+            if (btnR) btnR.className = diffKey === 'ROOKIE' ? "py-1 px-1.5 rounded font-orbitron text-[9px] font-black border border-emerald-400 bg-emerald-500/20 text-emerald-200 shadow transition" : inactiveClass;
+            if (btnV) btnV.className = diffKey === 'VETERAN' ? "py-1 px-1.5 rounded font-orbitron text-[9px] font-black border border-cyan-400 bg-cyan-500/20 text-cyan-200 shadow transition" : inactiveClass;
+            if (btnA) btnA.className = diffKey === 'ACE' ? "py-1 px-1.5 rounded font-orbitron text-[9px] font-black border border-rose-400 bg-rose-500/25 text-rose-200 shadow transition" : inactiveClass;
+        }
+
         let score = 0;
         let kills = 0;
         let waveNumber = 1; // Arcade modda Level 1..9
-        let waveKillsNeeded = 12;
+        let waveKillsNeeded = 26;
         let currentWaveKills = 0;
         let usedContinues = 0;
         let continueCountdownVal = 9;
@@ -1815,12 +1995,18 @@
             score = 0;
             kills = 0;
             waveNumber = 1;
-            waveKillsNeeded = 12;
+            waveKillsNeeded = currentDifficulty.baseKills;
             currentWaveKills = 0;
             usedContinues = 0;
             activeBoss = null;
             spawnTimer = 0;
             bonusTimer = 0;
+
+            // Arcade modda her zaman Etap 1 (Dünya: Açık Okyanus) ile başlar, Etap 9 (Derin Uzay İstilası) ile biter
+            if (gameMode === 'ARCADE') {
+                selectedMap = GAME_MAPS[0];
+            }
+            document.getElementById('victoryModal').classList.add('hidden');
 
             document.getElementById('hudPlaneName').innerText = selectedPlane.name;
             document.getElementById('hudMapType').innerText = selectedMap.title.replace('DÜNYA: ', '').replace('İSTİLA: ', '');
@@ -1907,11 +2093,8 @@
             if (creditsEl) creditsEl.innerText = `${availableCredits} HAK`;
 
             if (isVictory) {
-                titleEl.innerText = "🏆 ZAFER // 9 LEVEL TAMAMLANDI!";
-                titleEl.className = "font-orbitron text-xl sm:text-2xl font-black text-amber-300 tracking-wider hud-glow-text";
-                countdownWrap.classList.add('hidden');
-                btnContinue.classList.add('hidden');
-                infoBox.innerHTML = `Tebrikler Komutan! Tüm 9 Operasyon Cephesini ve Boss Filolarını imha ettiniz!`;
+                modal.classList.add('hidden');
+                showVictoryCommendationModal();
                 return;
             }
 
@@ -1945,6 +2128,74 @@
                     infoBox.innerHTML = `<span class="text-rose-400 font-bold">SÜRE DOLDU // SORTİ KAYDEDİLDİ.</span> Yeniden başlayabilir veya hangara dönebilirsiniz.`;
                 }
             }, 1000);
+        }
+
+        function showVictoryCommendationModal() {
+            const vModal = document.getElementById('victoryModal');
+            vModal.classList.remove('hidden');
+
+            const mainLogo = document.getElementById('hangarHeroLogoImg');
+            const vLogo = document.getElementById('victoryLogoImg');
+            if (mainLogo && vLogo && mainLogo.src) vLogo.src = mainLogo.src;
+
+            document.getElementById('victoryScoreVal').innerText = score.toLocaleString('tr-TR');
+            document.getElementById('victoryKillsVal').innerText = kills;
+            document.getElementById('victoryPlaneVal').innerText = selectedPlane.name;
+            document.getElementById('victoryDifficultyStamp').innerText = currentDifficulty.name;
+
+            const letterEl = document.getElementById('victoryLetterBody');
+            const challengeEl = document.getElementById('victoryNextChallengeBox');
+            const btnNextDiff = document.getElementById('btnVictoryNextDifficulty');
+            const medalIcon = document.getElementById('victoryMedalIcon');
+            const medalTitle = document.getElementById('victoryMedalTitle');
+            const headerTitle = document.getElementById('victoryHeaderTitle');
+
+            if (currentDifficulty.id === 'ROOKIE') {
+                headerTitle.innerText = "HİZMET TEBRİK MEKTUBU";
+                medalIcon.innerText = "🥉";
+                medalTitle.innerText = "BRONZ PİLOT BRÖVESİ";
+                letterEl.innerHTML = `
+                    <p><strong>Sayın Pilot Komutan (${selectedPlane.name}),</strong></p>
+                    <p>Türk Hava Komutanlığı bünyesinde 6 Dünya Savunma Etaplarını ve 3 Uzay İstilası Cephesini <strong>Çaylak Pilot</strong> eğitim zorluğunda başarıyla tamamladınız.</p>
+                    <p>Üstün Hizmet Madalyası ve Resmi Komutanlık Beratı alabilmek için sizi gerçek çatışma temposu olan bir üst kademeye davet ediyoruz!</p>
+                `;
+                challengeEl.innerHTML = `🎯 <strong>KOMUTANLIK ÇAĞRISI:</strong> Şimdi <strong>🟡 SAVAŞ PİLOTU (NORMAL)</strong> moduna geçerek gerçek savaş temposunda yeteneğinizi kanıtlayın!`;
+                btnNextDiff.classList.remove('hidden');
+                btnNextDiff.innerText = "🟡 SAVAŞ PİLOTU MODUNDA BAŞLAT";
+                btnNextDiff.onclick = () => {
+                    setDifficulty('VETERAN');
+                    vModal.classList.add('hidden');
+                    startGame();
+                };
+            } else if (currentDifficulty.id === 'VETERAN') {
+                headerTitle.innerText = "ÜSTÜN BAŞARI MEKTUBU";
+                medalIcon.innerText = "🥈";
+                medalTitle.innerText = "GÜMÜŞ LİYAKAT MADALYASI";
+                letterEl.innerHTML = `
+                    <p><strong>Sayın Kıdemli Savaş Pilotu (${selectedPlane.name}),</strong></p>
+                    <p>Açık Okyanus'tan Derin Uzay'a uzanan 9 kritik cepheyi <strong>Savaş Pilotu</strong> zorluğunda üstün cesaret ve yüksek isabetle tamamladınız.</p>
+                    <p>Hava Kuvvetlerimizin en yüksek onuru olan <strong>Altın Devlet Üstün Hizmet Madalyası ve Beratı</strong> için son bir sınavınız kaldı!</p>
+                `;
+                challengeEl.innerHTML = `🔥 <strong>SON ZİRVE HEDEFİ:</strong> Şimdi en üst seviye olan <strong>🔴 EFSANE AS PİLOT (ACE)</strong> modunda tüm cepheleri tamamlayarak Altın Üstün Hizmet Madalyasını kazanın!`;
+                btnNextDiff.classList.remove('hidden');
+                btnNextDiff.innerText = "🔴 EFSANE AS (ACE) MODUNDA BAŞLAT";
+                btnNextDiff.onclick = () => {
+                    setDifficulty('ACE');
+                    vModal.classList.add('hidden');
+                    startGame();
+                };
+            } else {
+                headerTitle.innerText = "DEVLET ÜSTÜN HİZMET BELGESİ & MADALYASI";
+                medalIcon.innerText = "🏅👑";
+                medalTitle.innerText = "ALTIN ÜSTÜN HİZMET MADALYASI";
+                letterEl.innerHTML = `
+                    <p><strong>Sayın Efsanevi As Komutan (${selectedPlane.name}),</strong></p>
+                    <p>En yüksek zorluk derecesi olan <strong>EFSANE AS PİLOT (ACE)</strong> modunda Dünya ve Uzay İstilası cephelerindeki tüm düşman armadalarını imha ederek tarihe geçtiniz!</p>
+                    <p class="text-amber-300 font-bold">Türk Hava Komutanlığı tarafından en yüksek onur nişanı olan "ALTIN ÜSTÜN HİZMET MADALYASI VE ONUR BERATI" ile taltif edildiniz.</p>
+                `;
+                challengeEl.innerHTML = `👑 <strong>MAKSİMUM ONUR SEVİYESİ:</strong> En üst zorluk derecesini zaferle tamamladınız! Gökyüzünün mutlak hakimisiniz.`;
+                btnNextDiff.classList.add('hidden');
+            }
         }
 
         /**
@@ -2019,7 +2270,7 @@
         function spawnTarget() {
             const pool = ENEMY_POOLS[selectedMap.type].regular;
             const tpl = pool[Math.floor(Math.random() * pool.length)];
-            const hpScale = 1 + (waveNumber - 1) * 0.18;
+            const hpScale = (1 + (waveNumber - 1) * 0.25) * currentDifficulty.enemyHpMult;
 
             const flightPatterns = ['interceptor', 'slashAttack', 'evasiveWeave'];
             const pattern = flightPatterns[Math.floor(Math.random() * flightPatterns.length)];
@@ -2059,7 +2310,7 @@
         function spawnBoss() {
             const bossPool = ENEMY_POOLS[selectedMap.type].bosses;
             const tpl = bossPool[(waveNumber - 1) % bossPool.length];
-            const hpScale = 1 + (waveNumber - 1) * 0.25;
+            const hpScale = (1 + (waveNumber - 1) * 0.35) * currentDifficulty.bossHpMult;
 
             activeBoss = {
                 id: tpl.id,
@@ -2699,8 +2950,8 @@
                 const h = t.baseH * t.z + hitRadiusBonus;
 
                 if (Math.abs(hx - renderX) <= w * 0.5 && Math.abs(hy - renderY) <= h * 0.5) {
-                    // Kanat roketleri normal hedefleri doğrudan imha edecek güçtedir, Boss'lara ise yüksek hasar verir
-                    const effectiveDmg = (isAreaMissile && !t.isBoss) ? Math.max(dmg, t.hp + 10) : dmg;
+                    // Kanat roketleri hafif/orta hedefleri tek seferde imha eder, ağır zırhlı hedeflere ve Boss'lara yüksek hasar verir
+                    const effectiveDmg = (isAreaMissile && !t.isBoss) ? dmg * 1.45 : dmg;
                     t.hp -= effectiveDmg;
                     t.hitFlash = 1.0;
                     createExplosion(renderX, renderY, '#38bdf8', 5);
@@ -2738,7 +2989,7 @@
 
                             waveNumber++;
                             currentWaveKills = 0;
-                            waveKillsNeeded = 12 + (waveNumber - 1) * 4;
+                            waveKillsNeeded = currentDifficulty.baseKills + (waveNumber - 1) * currentDifficulty.killsPerLevel;
 
                             // Arcade modda her yeni Level'da 9 haritadan sıradakine geçiş yapılır
                             if (gameMode === 'ARCADE') {
@@ -3372,6 +3623,21 @@
 
         const btnContinue = document.getElementById('btnModalContinue');
         if (btnContinue) btnContinue.addEventListener('click', continueFromCurrentLevel);
+
+        // Zorluk Seçim Tuşları
+        const btnRookie = document.getElementById('btnDiffRookie');
+        const btnVeteran = document.getElementById('btnDiffVeteran');
+        const btnAce = document.getElementById('btnDiffAce');
+        if (btnRookie) btnRookie.addEventListener('click', () => setDifficulty('ROOKIE'));
+        if (btnVeteran) btnVeteran.addEventListener('click', () => setDifficulty('VETERAN'));
+        if (btnAce) btnAce.addEventListener('click', () => setDifficulty('ACE'));
+
+        // Zafer / Üstün Hizmet Mektubu Hangara Dön Tuşu
+        const btnVicMenu = document.getElementById('btnVictoryMenu');
+        if (btnVicMenu) btnVicMenu.addEventListener('click', () => {
+            document.getElementById('victoryModal').classList.add('hidden');
+            stopToMenu();
+        });
 
         document.getElementById('btnStartGame').addEventListener('click', startGame);
         document.getElementById('btnBackToMenu').addEventListener('click', stopToMenu);
