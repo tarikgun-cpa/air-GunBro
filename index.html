@@ -775,9 +775,9 @@
             { id: 'Avcı_F22', name: 'F-22 RAPTOR', role: 'Hava Üstünlük Avcısı', hp: 195, armor: 175, damage: 90, speed: 9.2, fuel: 125, color: '#94a3b8', accent: '#fbbf24', wingType: 'stealth' },
             { id: 'Avcı_B2', name: 'B-2 SPIRIT', role: 'Ağır Hayalet Bombardıman', hp: 280, armor: 240, damage: 115, speed: 6.8, fuel: 180, color: '#1e293b', accent: '#06b6d4', wingType: 'flyingWing' },
             { id: 'Avcı_Su57', name: 'SU-57 FELON', role: 'Süper Manevra Avcısı', hp: 210, armor: 165, damage: 92, speed: 9.0, fuel: 130, color: '#60a5fa', accent: '#f87171', wingType: 'swept' },
-            { id: 'Avcı_Ege', name: 'AVCI EGE', role: 'Ege Hava Muhafızı', hp: 295, armor: 265, damage: 110, speed: 9.5, fuel: 135, color: '#0284c7', accent: '#e2e8f0', wingType: 'swept' },
+            { id: 'Avcı_Ege', name: 'AVCI EGE', role: 'Ege Hava Muhafızı', hp: 295, armor: 265, damage: 135, speed: 9.5, fuel: 135, color: '#0284c7', accent: '#e2e8f0', wingType: 'swept' },
             { id: 'Avcı_Tarik', name: 'AVCI TARIK', role: 'Yıldırım Taarruz Jeti', hp: 180, armor: 155, damage: 98, speed: 9.5, fuel: 125, color: '#4f46e5', accent: '#f59e0b', wingType: 'canard' },
-            { id: 'Avcı_Uras', name: 'AVCI URAS', role: 'Yok Edici', hp: 285, armor: 255, damage: 100, speed: 9.9, fuel: 165, color: '#0f766e', accent: '#2dd4bf', wingType: 'stealth' }
+            { id: 'Avcı_Uras', name: 'AVCI URAS', role: 'Yok Edici', hp: 285, armor: 255, damage: 120, speed: 9.9, fuel: 165, color: '#0f766e', accent: '#2dd4bf', wingType: 'stealth' }
         ];
 
         const GAME_MAPS = [
@@ -877,7 +877,8 @@
          * 2) Kanat altları, füze pilon araları veya kuyruk dikmeleri arasında kapalı kalan beyaz adacıkları (interior trapped white spaces) tespit edip şeffaflaştırır.
          * 3) Uçak ve düşman araçlarının etrafındaki 1-2 piksellik beyaz/gri JPEG sıkıştırma halelerini (white halo) yumuşatarak tamamen yok eder.
          */
-        function processAndCleanSprite(img, assetName) {
+       
+         function processAndCleanSprite(img, assetName) {
             if (!removeWhiteBgEnabled || isMapAsset(assetName)) {
                 return img;
             }
@@ -900,9 +901,8 @@
                 const queue = new Int32Array(totalPixels);
                 let head = 0, tail = 0;
 
-                // Köşe piksellerinden arka plan rengini örnekle
                 const sampleCorners = [0, (w - 1) * 4, ((h - 1) * w) * 4, ((h - 1) * w + (w - 1)) * 4];
-                let bgR = 252, bgG = 252, bgB = 252;
+                let bgR = 250, bgG = 250, bgB = 250;
                 let validCorners = 0, sumR = 0, sumG = 0, sumB = 0;
                 for (const c of sampleCorners) {
                     if (data[c + 3] > 180 && data[c] > 170 && data[c + 1] > 170 && data[c + 2] > 170) {
@@ -916,32 +916,7 @@
                     bgB = sumB / validCorners;
                 }
 
-                const isHurjet = assetName && assetName.toLowerCase().includes('hurjet');
-
-                // Hürjet'in beyaz burnu, kokpiti ve sırt şeridi arka planla birleştiği için
-                // uçağın merkez omurgasını (üçgen gövde hattını) Flood-Fill sızıntısına karşı korur
-                function isProtectedFuselage(idx) {
-                    if (!isHurjet) return false;
-                    const nx = (idx % w) / w;
-                    const ny = ((idx / w) | 0) / h;
-
-                    // 1. Kokpit, beyaz burun ve beyaz sırt omurgası (Orta dikey şerit)
-                    if (ny >= 0.11 && ny <= 0.78 && Math.abs(nx - 0.5) <= 0.068) {
-                        return true;
-                    }
-                    // 2. Uçağın ana gövde üçgeni (Kanat içi ve motor bölgesi)
-                    if (ny >= 0.24 && ny <= 0.75) {
-                        const halfSpan = 0.06 + (ny - 0.24) * 0.65;
-                        if (Math.abs(nx - 0.5) <= Math.min(0.24, halfSpan)) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-
                 function isBackgroundLike(idx) {
-                    if (isProtectedFuselage(idx)) return false;
-
                     const p = idx * 4;
                     const r = data[p], g = data[p + 1], b = data[p + 2], a = data[p + 3];
                     if (a < 30) return true;
@@ -951,20 +926,12 @@
                     const lum = (r * 0.299 + g * 0.587 + b * 0.114);
                     const distToCornerBg = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
 
-                    // Hürjet'in beyaz kuyruk dikmelerinin (235-248 parlaklık) silinmemesi için sadece tam beyaz arka planı (251+) sil
-                    if (isHurjet) {
-                        if (lum >= 251 && chroma <= 5) return true;
-                        if (lum >= 195 && chroma <= 16 && ((idx / w) | 0) > h * 0.72) return true; // Sadece alt motor gölgesi
-                        return false;
-                    }
-
-                    if (distToCornerBg < 65 && chroma < 32) return true;
-                    if (lum >= 192 && chroma <= 28) return true;
-                    if (lum >= 170 && chroma <= 15) return true;
+                    if (distToCornerBg < 72 && chroma < 38) return true;
+                    if (lum >= 186 && chroma <= 34) return true;
+                    if (lum >= 165 && chroma <= 18) return true;
                     return false;
                 }
 
-                // Kenar piksellerini kuyruğa ekle
                 for (let x = 0; x < w; x++) {
                     const topIdx = x;
                     const botIdx = (h - 1) * w + x;
@@ -978,7 +945,6 @@
                     if (isBackgroundLike(rightIdx) && !visited[rightIdx]) { visited[rightIdx] = 1; queue[tail++] = rightIdx; }
                 }
 
-                // AŞAMA 1: Dıştan içe Flood-Fill
                 while (head < tail) {
                     const curr = queue[head++];
                     data[curr * 4 + 3] = 0;
@@ -1002,13 +968,25 @@
                     }
                 }
 
-                // AŞAMA 2: Kenar Halo Erozyonu (Hürjet'in beyaz kısımlarına dokunmadan dış kenar yumuşatması)
+                for (let y = 1; y < h - 1; y++) {
+                    for (let x = 1; x < w - 1; x++) {
+                        const idx = y * w + x;
+                        if (visited[idx]) continue;
+                        const p = idx * 4;
+                        const r = data[p], g = data[p + 1], b = data[p + 2];
+                        const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+                        const lum = (r + g + b) / 3;
+                        if (lum > 236 && chroma < 14) {
+                            data[p + 3] = 0;
+                            visited[idx] = 1;
+                        }
+                    }
+                }
+
                 for (let pass = 0; pass < 2; pass++) {
                     for (let y = 1; y < h - 1; y++) {
                         for (let x = 1; x < w - 1; x++) {
                             const idx = y * w + x;
-                            if (isProtectedFuselage(idx)) continue;
-
                             const p = idx * 4;
                             if (data[p + 3] === 0) continue;
 
@@ -1022,8 +1000,8 @@
                                 const r = data[p], g = data[p + 1], b = data[p + 2];
                                 const lum = (r + g + b) / 3;
                                 const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-                                if (lum > (isHurjet ? 242 : 165) && chroma < 35) {
-                                    const fade = Math.max(0, (235 - lum) / 60);
+                                if (lum > 155 && chroma < 42) {
+                                    const fade = Math.max(0, (215 - lum) / 65);
                                     data[p + 3] = Math.round(data[p + 3] * fade * 0.65);
                                     if (data[p + 3] < 25) data[p + 3] = 0;
                                 }
@@ -1032,7 +1010,6 @@
                     }
                 }
 
-                // AŞAMA 3: Otomatik Kırpma (Auto-Crop)
                 let minX = w, minY = h, maxX = 0, maxY = 0;
                 for (let y = 0; y < h; y++) {
                     for (let x = 0; x < w; x++) {
