@@ -299,7 +299,7 @@
                             <p class="text-[11px] text-slate-300">Aerodinamik avcı uçağınızı ve kanat pilon mühimmatını seçin</p>
                         </div>
                     </div>
-                    <span class="bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 text-[10px] font-orbitron font-bold px-2.5 py-1 rounded-lg">10 FİLO UÇAĞI</span>
+                    <span class="bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 text-[10px] font-orbitron font-bold px-2.5 py-1 rounded-lg">12 FİLO UÇAĞI</span>
                 </div>
 
                 <!-- ÜST VİTRİN: GENİŞ HOLOGRAFİK DÖNER RADAR PLATFORMU + DETAYLI TEKNİK BARLAR -->
@@ -363,8 +363,8 @@
                     </div>
                 </div>
 
-                <!-- ALT 10 AVCI UÇAĞI SEÇİM KARTLARI (Büyük ve Ferah Görünüm) -->
-                <div id="planeGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2 overflow-y-auto custom-scroll pr-1 flex-1"></div>
+                <!-- ALT 12 AVCI UÇAĞI SEÇİM KARTLARI (Büyük ve Ferah Görünüm) -->
+                <div id="planeGrid" class="grid grid-cols-2 sm:grid-cols-6 gap-2 overflow-y-auto custom-scroll pr-1 flex-1"></div>
             </div>
 
             <!-- 3. SÜTUN (SAĞ - 4 BİRİM): 9 OPERASYON HARİTASI KOMUTA MERKEZİ & SORTİ BAŞLATMA -->
@@ -707,8 +707,8 @@
          *************************************************************************/
         const EXACT_ASSET_NAMES = {
             fighters: [
-                'Avcı_Kaan', 'Avcı_Kizilelma', 'Avcı_J20', 'Avcı_F35', 'Avcı_F22',
-                'Avcı_B2', 'Avcı_Su57', 'Avcı_Ege', 'Avcı_Tarik', 'Avcı_Uras'
+                'Avcı_Kaan', 'Avcı_Kizilelma', 'Hurjet', 'Anka3', 'Avcı_J20', 'Avcı_F35',
+                'Avcı_F22', 'Avcı_B2', 'Avcı_Su57', 'Avcı_Ege', 'Avcı_Tarik', 'Avcı_Uras'
             ],
             playerMissiles: [
                 'Avcı_Füze_Sag', 'Avcı_Füze_Sol'
@@ -768,6 +768,8 @@
         const FIGHTER_PLANES = [
             { id: 'Avcı_Kaan', name: 'TF-X KAAN', role: '5. Nesil Çok Rollü Avcı', hp: 200, armor: 180, damage: 90, speed: 8.8, fuel: 135, color: '#38bdf8', accent: '#f43f5e', wingType: 'stealth' },
             { id: 'Avcı_Kizilelma', name: 'BAYRAKTAR KIZILELMA', role: 'İnsansız Savaş Uçağı', hp: 165, armor: 155, damage: 95, speed: 9.8, fuel: 150, color: '#64748b', accent: '#ef4444', wingType: 'canard' },
+            { id: 'Hurjet', name: 'TUSAŞ HÜRJET', role: 'Süpersonik Hafif Taarruz Jeti', hp: 175, armor: 160, damage: 88, speed: 9.6, fuel: 140, color: '#dc2626', accent: '#ffffff', wingType: 'swept' },
+            { id: 'Anka3', name: 'TUSAŞ ANKA-3', role: 'Hayalet Delta İnsansız Jet', hp: 220, armor: 195, damage: 105, speed: 8.6, fuel: 165, color: '#334155', accent: '#ef4444', wingType: 'flyingWing' },
             { id: 'Avcı_J20', name: 'CHENGDU J-20', role: 'Uzun Menzil Önleme', hp: 195, armor: 160, damage: 86, speed: 8.7, fuel: 145, color: '#334155', accent: '#eab308', wingType: 'canard' },
             { id: 'Avcı_F35', name: 'F-35 LIGHTNING II', role: 'Görünmez Taarruz Avcısı', hp: 185, armor: 175, damage: 85, speed: 8.2, fuel: 135, color: '#475569', accent: '#38bdf8', wingType: 'stealth' },
             { id: 'Avcı_F22', name: 'F-22 RAPTOR', role: 'Hava Üstünlük Avcısı', hp: 195, armor: 175, damage: 90, speed: 9.2, fuel: 125, color: '#94a3b8', accent: '#fbbf24', wingType: 'stealth' },
@@ -1174,18 +1176,28 @@
             return url;
         }
 
+        // Dosya adı alternatifleri (Hurjet.jpg veya Avcı_Hurjet.jpg ikisini de otomatik bulur)
+        function getAssetFileCandidates(assetName) {
+            if (assetName === 'Hurjet') return ['Hurjet', 'Hürjet', 'Avcı_Hurjet', 'Avcı_Hürjet'];
+            if (assetName === 'Anka3') return ['Anka3', 'Anka-3', 'Avcı_Anka3', 'Avcı_Anka-3'];
+            return [assetName];
+        }
+
         function tryAutoLoadFromRelativeFolder() {
             syncBrandingLogoAndFavicon("./");
             ALL_66_ASSETS.forEach(assetName => {
-                ['.png', '.jpg', '.webp'].forEach(extVariant => {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.onload = () => {
-                        if (!loadedSprites[assetName]) {
-                            registerLoadedSprite(assetName, img);
-                        }
-                    };
-                    img.src = `./${encodeURIComponent(assetName.normalize('NFC'))}${extVariant}`;
+                const candidates = getAssetFileCandidates(assetName);
+                candidates.forEach(candName => {
+                    ['.jpg', '.png', '.webp'].forEach(extVariant => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => {
+                            if (!loadedSprites[assetName]) {
+                                registerLoadedSprite(assetName, img);
+                            }
+                        };
+                        img.src = `./${encodeURIComponent(candName.normalize('NFC'))}${extVariant}`;
+                    });
                 });
             });
         }
@@ -1196,21 +1208,26 @@
             syncBrandingLogoAndFavicon(cleanBase);
 
             ALL_66_ASSETS.forEach(assetName => {
-                const tryLoad = (nameVariant, extVariant, isRetry = false) => {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous";
-                    img.onload = () => {
-                        registerLoadedSprite(assetName, img);
+                const candidates = getAssetFileCandidates(assetName);
+                candidates.forEach(candName => {
+                    const tryLoad = (nameVariant, extVariant, isRetry = false) => {
+                        const img = new Image();
+                        img.crossOrigin = "anonymous";
+                        img.onload = () => {
+                            if (!loadedSprites[assetName]) {
+                                registerLoadedSprite(assetName, img);
+                            }
+                        };
+                        img.onerror = () => {
+                            if (!isRetry) {
+                                const altExt = extVariant === '.png' ? '.jpg' : '.png';
+                                tryLoad(nameVariant.normalize('NFC'), altExt, true);
+                            }
+                        };
+                        img.src = cleanBase + encodeURIComponent(nameVariant.normalize('NFC')) + extVariant;
                     };
-                    img.onerror = () => {
-                        if (!isRetry) {
-                            const altExt = extVariant === '.png' ? '.jpg' : '.png';
-                            tryLoad(nameVariant.normalize('NFC'), altExt, true);
-                        }
-                    };
-                    img.src = cleanBase + encodeURIComponent(nameVariant.normalize('NFC')) + extVariant;
-                };
-                tryLoad(assetName, ext, false);
+                    tryLoad(candName, ext, false);
+                });
             });
         }
 
