@@ -387,8 +387,8 @@
                 <div class="mt-auto bg-slate-950/95 border border-cyan-500/30 rounded-xl p-2.5 flex flex-col gap-2 shadow-inner shrink-0">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] text-slate-300">
                         <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800/90 flex flex-col">
-                            <span class="text-cyan-400 font-bold font-orbitron text-[8px] tracking-wider">⚡ W / YUKARI</span>
-                            <span class="text-[9px] text-slate-300">Süpersonik Turbo</span>
+                            <span class="text-amber-400 font-bold font-orbitron text-[8px] tracking-wider">🔥 W / FLARE</span>
+                            <span class="text-[9px] text-slate-300">Tırmanış & Isı Bombası</span>
                         </div>
                         <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800/90 flex flex-col">
                             <span class="text-rose-400 font-bold font-orbitron text-[8px] tracking-wider">🔥 SOL TIK</span>
@@ -548,12 +548,12 @@
                         </div>
                     </button>
 
-                    <!-- TABLET VE TELEFONLAR İÇİN W TUŞU SÜPERSONİK ART YAKICI (AFTERBURNER TURBO) BUTONU -->
+                    <!-- TABLET VE MASAÜSTÜ İÇİN W TUŞU: YÜKSEK TIRMANIŞ & FÜZE İMHA EDEN ISI BOMBASI (FLARE) BUTONU -->
                     <button id="btnTouchAfterburner" class="tactical-fire-btn active:scale-90 text-amber-100 border-amber-400/80 rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 flex items-center space-x-1.5 transition select-none shadow-lg shadow-amber-500/20">
-                        <span class="text-lg sm:text-2xl">⚡</span>
+                        <span class="text-lg sm:text-2xl">🔥</span>
                         <div class="text-left">
-                            <div class="font-orbitron text-[9px] sm:text-xs font-black tracking-wider text-amber-300">TURBO İTKİ</div>
-                            <div class="text-[8px] sm:text-[9px] font-mono text-cyan-200">BASILI TUT [W]</div>
+                            <div class="font-orbitron text-[9px] sm:text-xs font-black tracking-wider text-amber-300">ISI BOMBASI</div>
+                            <div id="flareBtnSubText" class="text-[8px] sm:text-[9px] font-mono text-emerald-300">FLARE HAZIR [W]</div>
                         </div>
                     </button>
                 </div>
@@ -775,9 +775,9 @@
             { id: 'Avcı_F22', name: 'F-22 RAPTOR', role: 'Hava Üstünlük Avcısı', hp: 195, armor: 175, damage: 90, speed: 9.2, fuel: 125, color: '#94a3b8', accent: '#fbbf24', wingType: 'stealth' },
             { id: 'Avcı_B2', name: 'B-2 SPIRIT', role: 'Ağır Hayalet Bombardıman', hp: 280, armor: 240, damage: 115, speed: 6.8, fuel: 180, color: '#1e293b', accent: '#06b6d4', wingType: 'flyingWing' },
             { id: 'Avcı_Su57', name: 'SU-57 FELON', role: 'Süper Manevra Avcısı', hp: 210, armor: 165, damage: 92, speed: 9.0, fuel: 130, color: '#60a5fa', accent: '#f87171', wingType: 'swept' },
-            { id: 'Avcı_Ege', name: 'AVCI EGE', role: 'Ege Hava Muhafızı', hp: 185, armor: 165, damage: 86, speed: 9.3, fuel: 135, color: '#0284c7', accent: '#e2e8f0', wingType: 'swept' },
+            { id: 'Avcı_Ege', name: 'AVCI EGE', role: 'Ege Hava Muhafızı', hp: 295, armor: 265, damage: 110, speed: 9.5, fuel: 135, color: '#0284c7', accent: '#e2e8f0', wingType: 'swept' },
             { id: 'Avcı_Tarik', name: 'AVCI TARIK', role: 'Yıldırım Taarruz Jeti', hp: 180, armor: 155, damage: 98, speed: 9.5, fuel: 125, color: '#4f46e5', accent: '#f59e0b', wingType: 'canard' },
-            { id: 'Avcı_Uras', name: 'AVCI URAS', role: 'Ağır Zırhlı Önleme', hp: 235, armor: 205, damage: 90, speed: 8.0, fuel: 145, color: '#0f766e', accent: '#2dd4bf', wingType: 'stealth' }
+            { id: 'Avcı_Uras', name: 'AVCI URAS', role: 'Yok Edici', hp: 285, armor: 255, damage: 100, speed: 9.9, fuel: 165, color: '#0f766e', accent: '#2dd4bf', wingType: 'stealth' }
         ];
 
         const GAME_MAPS = [
@@ -902,7 +902,7 @@
 
                 // Köşe piksellerinden arka plan rengini örnekle
                 const sampleCorners = [0, (w - 1) * 4, ((h - 1) * w) * 4, ((h - 1) * w + (w - 1)) * 4];
-                let bgR = 250, bgG = 250, bgB = 250;
+                let bgR = 252, bgG = 252, bgB = 252;
                 let validCorners = 0, sumR = 0, sumG = 0, sumB = 0;
                 for (const c of sampleCorners) {
                     if (data[c + 3] > 180 && data[c] > 170 && data[c + 1] > 170 && data[c + 2] > 170) {
@@ -916,21 +916,51 @@
                     bgB = sumB / validCorners;
                 }
 
+                const isHurjet = assetName && assetName.toLowerCase().includes('hurjet');
+
+                // Hürjet'in beyaz burnu, kokpiti ve sırt şeridi arka planla birleştiği için
+                // uçağın merkez omurgasını (üçgen gövde hattını) Flood-Fill sızıntısına karşı korur
+                function isProtectedFuselage(idx) {
+                    if (!isHurjet) return false;
+                    const nx = (idx % w) / w;
+                    const ny = ((idx / w) | 0) / h;
+
+                    // 1. Kokpit, beyaz burun ve beyaz sırt omurgası (Orta dikey şerit)
+                    if (ny >= 0.11 && ny <= 0.78 && Math.abs(nx - 0.5) <= 0.068) {
+                        return true;
+                    }
+                    // 2. Uçağın ana gövde üçgeni (Kanat içi ve motor bölgesi)
+                    if (ny >= 0.24 && ny <= 0.75) {
+                        const halfSpan = 0.06 + (ny - 0.24) * 0.65;
+                        if (Math.abs(nx - 0.5) <= Math.min(0.24, halfSpan)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
                 function isBackgroundLike(idx) {
+                    if (isProtectedFuselage(idx)) return false;
+
                     const p = idx * 4;
                     const r = data[p], g = data[p + 1], b = data[p + 2], a = data[p + 3];
                     if (a < 30) return true;
                     const maxC = Math.max(r, g, b);
                     const minC = Math.min(r, g, b);
-                    const chroma = maxC - minC; // Renk doygunluğu
+                    const chroma = maxC - minC;
                     const lum = (r * 0.299 + g * 0.587 + b * 0.114);
                     const distToCornerBg = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
 
-                    // 1. Köşe arka plan rengine çok yakın pikseller
-                    if (distToCornerBg < 72 && chroma < 38) return true;
-                    // 2. Genel açık beyaz / açık gri / stüdyo gölgesi
-                    if (lum >= 186 && chroma <= 34) return true;
-                    if (lum >= 165 && chroma <= 18) return true;
+                    // Hürjet'in beyaz kuyruk dikmelerinin (235-248 parlaklık) silinmemesi için sadece tam beyaz arka planı (251+) sil
+                    if (isHurjet) {
+                        if (lum >= 251 && chroma <= 5) return true;
+                        if (lum >= 195 && chroma <= 16 && ((idx / w) | 0) > h * 0.72) return true; // Sadece alt motor gölgesi
+                        return false;
+                    }
+
+                    if (distToCornerBg < 65 && chroma < 32) return true;
+                    if (lum >= 192 && chroma <= 28) return true;
+                    if (lum >= 170 && chroma <= 15) return true;
                     return false;
                 }
 
@@ -972,28 +1002,13 @@
                     }
                 }
 
-                // AŞAMA 2: Kanat/Füze pilonları arasında sıkışmış saf beyaz/açık gri boşlukları (interior islands) temizle
-                for (let y = 1; y < h - 1; y++) {
-                    for (let x = 1; x < w - 1; x++) {
-                        const idx = y * w + x;
-                        if (visited[idx]) continue;
-                        const p = idx * 4;
-                        const r = data[p], g = data[p + 1], b = data[p + 2];
-                        const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-                        const lum = (r + g + b) / 3;
-                        // Çok parlak renksiz beyaz adacıkları şeffaf yap
-                        if (lum > 236 && chroma < 14) {
-                            data[p + 3] = 0;
-                            visited[idx] = 1;
-                        }
-                    }
-                }
-
-                // AŞAMA 3: Kenar Halo Erozyonu (2 Geçişli yumuşatma ile beyaz çerçeve kalıntılarını tamamen siler)
+                // AŞAMA 2: Kenar Halo Erozyonu (Hürjet'in beyaz kısımlarına dokunmadan dış kenar yumuşatması)
                 for (let pass = 0; pass < 2; pass++) {
                     for (let y = 1; y < h - 1; y++) {
                         for (let x = 1; x < w - 1; x++) {
                             const idx = y * w + x;
+                            if (isProtectedFuselage(idx)) continue;
+
                             const p = idx * 4;
                             if (data[p + 3] === 0) continue;
 
@@ -1007,8 +1022,8 @@
                                 const r = data[p], g = data[p + 1], b = data[p + 2];
                                 const lum = (r + g + b) / 3;
                                 const chroma = Math.max(r, g, b) - Math.min(r, g, b);
-                                if (lum > 155 && chroma < 42) {
-                                    const fade = Math.max(0, (215 - lum) / 65);
+                                if (lum > (isHurjet ? 242 : 165) && chroma < 35) {
+                                    const fade = Math.max(0, (235 - lum) / 60);
                                     data[p + 3] = Math.round(data[p + 3] * fade * 0.65);
                                     if (data[p + 3] < 25) data[p + 3] = 0;
                                 }
@@ -1017,7 +1032,7 @@
                     }
                 }
 
-                // AŞAMA 4: Otomatik Kırpma (Auto-Crop)
+                // AŞAMA 3: Otomatik Kırpma (Auto-Crop)
                 let minX = w, minY = h, maxX = 0, maxY = 0;
                 for (let y = 0; y < h; y++) {
                     for (let x = 0; x < w; x++) {
@@ -1777,6 +1792,7 @@
         let wingMissiles = [];     // Kanat pilonlarından fırlatılan, kıvrımlı duman izli güdümlü füzeler
         let targets = [];          // Uzaktan (ufuktan) bize doğru 3D olarak büyüyerek ve manevra yaparak yaklaşan düşman uçakları
         let incomingMissiles = []; // Düşman uçaklarının ateşlediği füzeler
+        let flares = [];           // W tuşuyla atılan ve gelen füzeleri kendine çekip imha eden ısı bombaları
         let bonuses = [];
         let particles = [];        // Patlama, kıvılcım, roket dumanı ve kanat ucu vorteks izleri
         let speedLines = [];       // Süpersonik uçuş hissi veren 3D hız/bulut çizgileri
@@ -2015,6 +2031,8 @@
                 rollAngle: 0,
                 pitchFactor: 0,
                 afterburnerBoost: 0,
+                flareClimbTimer: 0,
+                flareCooldown: 0,
                 shieldHitTimer: 0,
                 wingVortexHistoryL: [],
                 wingVortexHistoryR: []
@@ -2028,6 +2046,7 @@
             wingMissiles = [];
             targets = [];
             incomingMissiles = [];
+            flares = [];
             bonuses = [];
             particles = [];
             shockwaves = [];
@@ -2348,6 +2367,54 @@
         }
 
         /**
+         * W TUŞU: YÜKSEK İRTİFA TIRMANIŞI & GELEN FÜZELERİ KENDİNE ÇEKİP İMHA EDEN ISI BOMBALARI (COUNTERMEASURE FLARES)
+         */
+        function deployThermalFlares() {
+            if (gameState !== 'PLAYING' || !player) return;
+            if (player.flareCooldown > 0) {
+                addFloatingText(player.x, player.y - 55, `⏳ ISI BOMBASI DOLUYOR: ${(player.flareCooldown / 60).toFixed(1)}s`, '#fbbf24');
+                playSound('warningBeep');
+                return;
+            }
+
+            // 1. Uçağı hızla yüksek irtifaya tırmandır (85 kare = ~1.4 saniye boyunca çok yükseğe çıkar)
+            player.flareClimbTimer = 85;
+            player.flareCooldown = 190; // ~3.1 saniye bekleme süresi
+            player.afterburnerBoost = 1.0;
+            playSound('afterburner');
+            playSound('missile');
+
+            addFloatingText(player.x, player.y - 75, '🔥 YÜKSEK TIRMANIŞ & ISI BOMBALARI ATILDI!', '#fbbf24');
+            createExplosion(player.x, player.y + 25, '#fde047', 22, true);
+
+            // 2. Uçağın kuyruğundan sağa ve sola Melek Kanadı (Angel Flare) düzeninde 8 adet ısı bombası bırak
+            const flareCount = 8;
+            for (let i = 0; i < flareCount; i++) {
+                const side = i % 2 === 0 ? -1 : 1;
+                const tier = Math.floor(i / 2) + 1;
+                flares.push({
+                    x: player.x + side * (16 + tier * 8),
+                    y: player.y + 18,
+                    vx: side * (2.6 + tier * 1.45) + (Math.random() - 0.5) * 0.8,
+                    vy: 1.5 + tier * 0.85,
+                    r: 9 + Math.random() * 4,
+                    life: 105,
+                    maxLife: 105,
+                    trail: []
+                });
+            }
+
+            // 3. Halihazırda havada bize doğru gelen tüm düşman füzelerini ısı bombalarına kilitle!
+            incomingMissiles.forEach((im, idx) => {
+                if (flares.length > 0) {
+                    im.luredFlare = flares[idx % flares.length];
+                }
+            });
+
+            updateHUD();
+        }
+
+        /**
          * 3D UZAKTAN BİZE DOĞRU GELEN DÜŞMAN SAVAŞ ARAÇLARI ÜRETİMİ:
          * Düşmanlar ufuk çizgisinin yakınında çok küçük (z = 0.14) olarak doğar ve
          * farklı uçuş paternleriyle (Taarruz Dalışı, S-Manevrası, İt Dalaşı Çemberi) bize doğru büyüyerek yaklaşırlar.
@@ -2579,6 +2646,18 @@
             if (btnR) btnR.style.opacity = (player.rightFireCooldown > 0 || player.rightMissiles <= 0) ? '0.45' : '1';
             if (btnS) btnS.style.opacity = (player.salvoFireCooldown > 0 || (player.leftMissiles <= 0 && player.rightMissiles <= 0)) ? '0.45' : '1';
 
+            const btnT = document.getElementById('btnTouchAfterburner');
+            const flareSub = document.getElementById('flareBtnSubText');
+            if (btnT) btnT.style.opacity = player.flareCooldown > 0 ? '0.50' : '1';
+            if (flareSub) {
+                flareSub.innerText = player.flareCooldown > 0
+                    ? `DOLUM: ${(player.flareCooldown / 60).toFixed(1)}s`
+                    : (incomingMissiles.length > 0 ? '⚠ FÜZE VAR! BAS [W]' : 'FLARE HAZIR [W]');
+                flareSub.className = incomingMissiles.length > 0 && player.flareCooldown <= 0
+                    ? 'text-[8px] sm:text-[9px] font-mono text-rose-400 font-black animate-pulse'
+                    : 'text-[8px] sm:text-[9px] font-mono text-emerald-300';
+            }
+
             // DÜZELTME 5: Askeri Kritik Seviye Uyarı Sistemi (HULL, SHIELD, FUEL %30'un altına düştüğünde yanıp sönen alarm ve sesli ikaz)
             const hpRatio = player.hp / player.maxHp;
             const shldRatio = player.shield / player.maxShield;
@@ -2623,14 +2702,12 @@
             if (keys['ArrowUp']) crosshair.y -= moveStep;
             if (keys['ArrowDown']) crosshair.y += moveStep;
 
-            // Klavyede W / Yukarı Ok VEYA Tablette "⚡ TURBO İTKİ" butonuna basıldığında uçak Süpersonik Art Yakıcı açar
-            const isBoosting = !!(keys['KeyW'] || keys['ArrowUp'] || touchBoostActive);
-            const isBraking = !!(keys['KeyS'] || keys['ArrowDown']);
-
-            if (isBoosting) {
-                if (player.afterburnerBoost < 0.1) playSound('afterburner');
-                player.afterburnerBoost = Math.min(1.0, player.afterburnerBoost + 0.08);
-            } else if (isBraking) {
+            // W Tuşu / Isı Bombası Cooldown ve Yüksek İrtifa Tırmanış Sayacı
+            if (player.flareCooldown > 0) player.flareCooldown--;
+            if (player.flareClimbTimer > 0) {
+                player.flareClimbTimer--;
+                player.afterburnerBoost = Math.min(1.0, player.flareClimbTimer / 45);
+            } else if (keys['KeyS'] || keys['ArrowDown']) {
                 player.afterburnerBoost = Math.max(-0.4, player.afterburnerBoost - 0.06);
             } else {
                 player.afterburnerBoost += (0 - player.afterburnerBoost) * 0.08;
@@ -2640,23 +2717,24 @@
             crosshair.x = Math.max(40, Math.min(canvas.width - 40, crosshair.x));
             crosshair.y = Math.max(55, Math.min(canvas.height - 75, crosshair.y));
 
-            // 2. PANORAMİK KOKPİT KAMERASI VE PARALLAX
+            // 2. PANORAMİK KOKPİT KAMERASI VE PARALLAX (Tırmanışta kamera da irtifa kazanır)
             const normMouseX = (crosshair.x / Math.max(1, canvas.width)) - 0.5;
             const normMouseY = (crosshair.y / Math.max(1, canvas.height)) - 0.5;
             const maxPanX = canvas.width * 0.16;
             const maxPanY = canvas.height * 0.10;
+            const climbCamShiftY = player.flareClimbTimer > 0 ? (player.afterburnerBoost * 55) : 0;
 
             camOffsetX += (-normMouseX * maxPanX * 2 - camOffsetX) * 0.075;
-            camOffsetY += (-normMouseY * maxPanY * 2 - camOffsetY) * 0.075;
+            camOffsetY += (-normMouseY * maxPanY * 2 + climbCamShiftY - camOffsetY) * 0.075;
             camTiltAngle += (-normMouseX * 0.055 - camTiltAngle) * 0.08;
 
             /**
-             * 3. GERÇEKÇİ AERODİNAMİK UÇUŞ FİZİĞİ + W TUŞU SÜPERSONİK İTKİ HAMLESİ
+             * 3. GERÇEKÇİ AERODİNAMİK UÇUŞ FİZİĞİ + W TUŞU YÜKSEK İRTİFA TIRMANIŞI (175px YUKARI ŞAHLANMA)
              */
-            const boostForwardOffset = player.afterburnerBoost * 68;
+            const boostForwardOffset = player.afterburnerBoost * 175;
             const flightDeckCenterX = canvas.width * 0.5 + (crosshair.x - canvas.width * 0.5) * 0.72;
             const flightDeckCenterY = (canvas.height * 0.77 - boostForwardOffset) + (crosshair.y - canvas.height * 0.45) * 0.28;
-            const clampedDesiredY = Math.max(canvas.height * 0.52, Math.min(canvas.height - 80, flightDeckCenterY));
+            const clampedDesiredY = Math.max(canvas.height * 0.28, Math.min(canvas.height - 80, flightDeckCenterY));
 
             const springStrength = 0.018 + (player.speed * 0.0012);
             const damping = 0.82;
@@ -2948,16 +3026,70 @@
                 }
             }
 
-            // 11. Bize Doğru Gelen Düşman Füzelerini Güncelle
+            // 11A. Atılan Isı Bombalarını (Thermal Flares) Güncelle
+            for (let i = flares.length - 1; i >= 0; i--) {
+                const fl = flares[i];
+                fl.x += fl.vx;
+                fl.y += fl.vy;
+                fl.vx *= 0.96;
+                fl.vy = fl.vy * 0.96 + 0.08; // Hafif süzülerek alçalma
+                fl.life--;
+
+                fl.trail.push({ x: fl.x, y: fl.y, r: fl.r * 0.9 });
+                if (fl.trail.length > 14) fl.trail.shift();
+
+                if (fl.life <= 0) {
+                    createExplosion(fl.x, fl.y, '#fde047', 8);
+                    flares.splice(i, 1);
+                }
+            }
+
+            // 11B. Bize Doğru Gelen Düşman Füzelerini Güncelle (Isı Bombası Varsa Ona Çekilir ve İmha Olur!)
             for (let i = incomingMissiles.length - 1; i >= 0; i--) {
                 const im = incomingMissiles[i];
-                im.z += im.speedZ;
+
+                // Eğer sahnede aktif ısı bombası varsa füzenin ısı arayıcı başlığı uçağı bırakıp ısı bombasına kilitlenir!
+                if (flares.length > 0) {
+                    if (!im.luredFlare || !flares.includes(im.luredFlare)) {
+                        let nearestFlare = flares[0];
+                        let minD = Infinity;
+                        flares.forEach(fl => {
+                            const d = Math.hypot(fl.x - im.x, fl.y - im.y);
+                            if (d < minD) { minD = d; nearestFlare = fl; }
+                        });
+                        im.luredFlare = nearestFlare;
+                    }
+                    if (im.luredFlare) {
+                        // Füzenin hedef noktasını hızla ısı bombasına saptır
+                        im.aimX += (im.luredFlare.x - im.aimX) * 0.25;
+                        im.aimY += (im.luredFlare.y - im.aimY) * 0.25;
+                        im.z += im.speedZ * 1.65;
+                    }
+                } else {
+                    im.z += im.speedZ;
+                }
+
                 im.x = im.startX + (im.aimX - im.startX) * im.z;
                 im.y = im.startY + (im.aimY - im.startY) * im.z;
 
+                // Füze ısı bombasına yaklaştıysa havada imha et!
+                if (im.luredFlare && flares.includes(im.luredFlare)) {
+                    const distToFlare = Math.hypot(im.x - im.luredFlare.x, im.y - im.luredFlare.y);
+                    if (distToFlare < 46 || im.z >= 0.88) {
+                        score += 50;
+                        createExplosion(im.x, im.y, '#fbbf24', 26, true);
+                        addFloatingText(im.x, im.y, '🔥 ISI BOMBASI İLE İMHA! +50', '#fde047');
+                        playSound('explosion');
+                        incomingMissiles.splice(i, 1);
+                        continue;
+                    }
+                }
+
                 if (im.z >= 1) {
                     const distToPlane = Math.hypot(im.x - player.x, im.y - player.y);
-                    if (distToPlane < 68) {
+                    // Uçak yüksek tırmanıştaysa (flareClimbTimer > 0) vuruş kutusu küçülür, kolayca sıyrılır
+                    const hitBoxRadius = player.flareClimbTimer > 0 ? 32 : 68;
+                    if (distToPlane < hitBoxRadius) {
                         applyDamageToPlayer(im.damage);
                         createExplosion(im.x, im.y, '#ef4444', 20);
                         playSound('explosion');
@@ -3349,10 +3481,62 @@
 
                 if (im.z > 0.35) {
                     ctx.font = 'bold 8px Orbitron, monospace';
-                    ctx.fillStyle = '#fda4af';
+                    ctx.fillStyle = im.luredFlare ? '#fde047' : '#fda4af';
                     ctx.textAlign = 'center';
-                    ctx.fillText('MSL WARN', 0, warnR + 10);
+                    ctx.fillText(im.luredFlare ? 'FLARE LOCKED' : 'MSL WARN', 0, warnR + 10);
                 }
+                ctx.restore();
+
+                // Füze ısı bombasına kilitlendiyse füzeden ısı bombasına sarı lazer kilit çizgisi çiz
+                if (im.luredFlare && flares.includes(im.luredFlare)) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(253, 224, 71, 0.65)';
+                    ctx.setLineDash([4, 4]);
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(im.x, im.y);
+                    ctx.lineTo(im.luredFlare.x, im.luredFlare.y);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            });
+
+            // 5B. ATILAN ISI BOMBALARINI (THERMAL FLARES & MELEK KANADI DUMANI) ÇİZ
+            flares.forEach(fl => {
+                // Yoğun beyaz/altın duman izi
+                for (let t = 0; t < fl.trail.length; t++) {
+                    const pt = fl.trail[t];
+                    const ratio = (t + 1) / fl.trail.length;
+                    ctx.save();
+                    ctx.fillStyle = `rgba(254, 240, 138, ${ratio * 0.45})`;
+                    ctx.beginPath();
+                    ctx.arc(pt.x, pt.y, pt.r * (1.6 - ratio * 0.6), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Parlayan Magnezyum Isı Küresi
+                ctx.save();
+                ctx.translate(fl.x, fl.y);
+                const pulse = 0.85 + Math.random() * 0.45;
+                const fGrad = ctx.createRadialGradient(0, 0, 1, 0, 0, fl.r * 2.4 * pulse);
+                fGrad.addColorStop(0, '#ffffff');
+                fGrad.addColorStop(0.35, '#fef08a');
+                fGrad.addColorStop(0.7, '#f97316');
+                fGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                ctx.fillStyle = fGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, fl.r * 2.4 * pulse, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Yıldız Parlama Çizgileri
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.6;
+                const sparkLen = fl.r * 1.8 * pulse;
+                ctx.beginPath();
+                ctx.moveTo(-sparkLen, 0); ctx.lineTo(sparkLen, 0);
+                ctx.moveTo(0, -sparkLen); ctx.lineTo(0, sparkLen);
+                ctx.stroke();
                 ctx.restore();
             });
 
@@ -3667,6 +3851,7 @@
 
         window.addEventListener('keydown', e => {
             keys[e.code] = true;
+            if (e.code === 'KeyW') deployThermalFlares();
             if (e.code === 'KeyQ') fireWingMissile('left');
             if (e.code === 'KeyE') fireWingMissile('right');
             if (e.code === 'KeyX') {
@@ -3702,25 +3887,8 @@
             fireDoubleSalvo();
         });
 
-        // Tablet ve Telefonlar İçin W Tuşu Süpersonik Turbo (Afterburner) Dokunmatik Tuş Bağlantısı
-        const btnTouchTurbo = document.getElementById('btnTouchAfterburner');
-        if (btnTouchTurbo) {
-            const startTurbo = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                touchBoostActive = true;
-            };
-            const endTurbo = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                touchBoostActive = false;
-            };
-            btnTouchTurbo.addEventListener('touchstart', startTurbo, { passive: false });
-            btnTouchTurbo.addEventListener('touchend', endTurbo, { passive: false });
-            btnTouchTurbo.addEventListener('touchcancel', endTurbo, { passive: false });
-            btnTouchTurbo.addEventListener('mousedown', startTurbo);
-            window.addEventListener('mouseup', () => { touchBoostActive = false; });
-        }
+        // Tablet ve Masaüstü İçin W Tuşu Yüksek Tırmanış & Isı Bombası (Flare) Buton Bağlantısı
+        bindTacticalButton('btnTouchAfterburner', () => deployThermalFlares());
 
         // Oyun Modu Seçim Tuşları ve Game Over / Continue Tuşları
         const btnArcMode = document.getElementById('btnSelectArcadeMode');
